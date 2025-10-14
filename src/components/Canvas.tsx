@@ -8,6 +8,7 @@ import type { PresenceData } from '../types/presence';
 import type { Rectangle, TempShape } from '../types/shape';
 import { useThrottle } from '../hooks/useThrottle';
 import { useTempShapes } from '../hooks/useTempShapes';
+import { useShapes } from '../hooks/useShapes';
 import { createRectangle, normalizeRect } from '../utils/shapeHelpers';
 import { rtdb } from '../services/firebase';
 import MultiplayerCursor from './MultiplayerCursor';
@@ -39,6 +40,9 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
     'default',
     user?.uid || null
   );
+
+  // Persistent shapes from Firestore
+  const { shapes, addShape } = useShapes('default');
 
   // Constraint functions
   const constrainPosition = (pos: Point, scale: number, viewport: Size): Point => {
@@ -192,7 +196,7 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
     }
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = async () => {
     if (!isDrawing || !currentRect) return;
     
     setIsDrawing(false);
@@ -205,8 +209,13 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
       // Normalize negative dimensions
       const normalizedRect = normalizeRect(currentRect);
       
-      // TODO: Save to Firestore (Task 3.5)
-      console.log('Rectangle created:', normalizedRect);
+      // Save to Firestore
+      try {
+        await addShape(normalizedRect);
+        console.log('Rectangle saved to Firestore:', normalizedRect);
+      } catch (error) {
+        console.error('Failed to save rectangle:', error);
+      }
     }
     
     setCurrentRect(null);
@@ -389,6 +398,21 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
               listening={false}
             />
           )}
+
+          {/* Persistent shapes from Firestore */}
+          {shapes.map((shape) => (
+            <Rect
+              key={shape.id}
+              x={shape.x}
+              y={shape.y}
+              width={shape.width}
+              height={shape.height}
+              fill={shape.fill}
+              stroke="#000"
+              strokeWidth={1}
+              listening={false}
+            />
+          ))}
 
           {/* Other users' temp shapes */}
           {tempShapes.map((shape) => (
