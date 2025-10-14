@@ -426,8 +426,8 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
                 shape={displayShape}
                 isLocked={isBeingDragged}
                 onDragStart={(shapeId) => startDrag(shapeId, shape.x, shape.y)}
-                onDragMove={(shapeId, x, y) => updateDrag(shapeId, x, y)}
-                onDragEnd={(shapeId, x, y) => endDrag(shapeId, x, y)}
+                onDragMove={(shapeId, x, y, width, height) => updateDrag(shapeId, x, y, width, height)}
+                onDragEnd={(shapeId, x, y, width, height) => endDrag(shapeId, x, y, width, height)}
               />
             );
           })}

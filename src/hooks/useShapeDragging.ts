@@ -30,12 +30,12 @@ export const useShapeDragging = (canvasId: string, userId: string | null) => {
     }
   };
 
-  const updateDrag = async (shapeId: string, x: number, y: number) => {
+  const updateDrag = async (shapeId: string, x: number, y: number, width: number, height: number) => {
     if (!userId || draggedShapeId !== shapeId) return;
 
     // Constrain to canvas boundaries
     const constrainedPos = constrainShapeToCanvas(
-      { id: shapeId, type: 'rectangle', x, y, width: 0, height: 0, fill: '', createdBy: '', createdAt: 0, lastModified: 0 },
+      { id: shapeId, type: 'rectangle', x, y, width, height, fill: '', createdBy: '', createdAt: 0, lastModified: 0 },
       CANVAS_WIDTH,
       CANVAS_HEIGHT
     );
@@ -56,13 +56,13 @@ export const useShapeDragging = (canvasId: string, userId: string | null) => {
     }
   };
 
-  const endDrag = async (shapeId: string, x: number, y: number) => {
+  const endDrag = async (shapeId: string, x: number, y: number, width: number, height: number) => {
     if (!userId || draggedShapeId !== shapeId) return;
 
     try {
       // Constrain final position
       const constrainedPos = constrainShapeToCanvas(
-        { id: shapeId, type: 'rectangle', x, y, width: 0, height: 0, fill: '', createdBy: '', createdAt: 0, lastModified: 0 },
+        { id: shapeId, type: 'rectangle', x, y, width, height, fill: '', createdBy: '', createdAt: 0, lastModified: 0 },
         CANVAS_WIDTH,
         CANVAS_HEIGHT
       );
