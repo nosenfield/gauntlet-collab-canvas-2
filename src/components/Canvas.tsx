@@ -174,15 +174,62 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange }) => {
         onWheel={handleWheel}
       >
         <Layer>
-          {/* Visual canvas boundary for development */}
+          {/* Dark gray background */}
           <Rect
             x={0}
             y={0}
             width={CANVAS_WIDTH}
             height={CANVAS_HEIGHT}
-            stroke="#cccccc"
-            strokeWidth={2}
-            fill="#ffffff"
+            fill="#2a2a2a"
+            listening={false}
+          />
+          
+          {/* Grid lines */}
+          {Array.from({ length: Math.floor(CANVAS_WIDTH / 100) + 1 }, (_, i) => {
+            const x = i * 100;
+            const isMajorLine = i % 5 === 0;
+            return (
+              <React.Fragment key={`vertical-${i}`}>
+                <Rect
+                  x={x}
+                  y={0}
+                  width={1}
+                  height={CANVAS_HEIGHT}
+                  fill="white"
+                  opacity={isMajorLine ? 1 : 0.5}
+                  listening={false}
+                />
+              </React.Fragment>
+            );
+          })}
+          
+          {Array.from({ length: Math.floor(CANVAS_HEIGHT / 100) + 1 }, (_, i) => {
+            const y = i * 100;
+            const isMajorLine = i % 5 === 0;
+            return (
+              <React.Fragment key={`horizontal-${i}`}>
+                <Rect
+                  x={0}
+                  y={y}
+                  width={CANVAS_WIDTH}
+                  height={1}
+                  fill="white"
+                  opacity={isMajorLine ? 1 : 0.5}
+                  listening={false}
+                />
+              </React.Fragment>
+            );
+          })}
+          
+          {/* Canvas boundary */}
+          <Rect
+            x={0}
+            y={0}
+            width={CANVAS_WIDTH}
+            height={CANVAS_HEIGHT}
+            stroke="#ff6b6b"
+            strokeWidth={3}
+            fill="transparent"
             listening={false}
           />
         </Layer>
