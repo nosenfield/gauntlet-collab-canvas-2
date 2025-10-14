@@ -553,7 +553,7 @@ collab-canvas-2/
 │   └── vite-env.d.ts           # Vite types
 │
 ├── .env                         # Environment variables (gitignored)
-├── .env.example                 # Environment template
+├── env.example                 # Environment template
 ├── .gitignore
 ├── package.json
 ├── tsconfig.json
