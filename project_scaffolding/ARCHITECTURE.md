@@ -510,7 +510,7 @@ graph LR
 ## Folder Structure
 
 ```
-collab-canvas/
+collab-canvas-2/
 ├── project_scaffolding/         # Project planning documents
 │   ├── PRD.md                   # Product Requirements Document
 │   ├── TASK_LIST.md             # Development task list

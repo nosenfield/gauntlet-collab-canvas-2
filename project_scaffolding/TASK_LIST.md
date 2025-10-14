@@ -38,7 +38,7 @@ Set up React + TypeScript + Vite project with all required dependencies.
 
 **Implementation Notes:**
 ```bash
-npm create vite@latest collab-canvas -- --template react-ts
+npm create vite@latest collab-canvas-2 -- --template react-ts
 npm install konva react-konva firebase uuid
 npm install -D @types/uuid
 ```
