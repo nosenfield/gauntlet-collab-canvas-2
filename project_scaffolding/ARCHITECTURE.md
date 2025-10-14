@@ -1,8 +1,7 @@
 # Architecture Diagram - CollabCanvas MVP
 
 **Project:** CollabCanvas  
-**Version:** 1.0  
-**Last Updated:** October 14, 2025
+**Version:** 1.0
 
 ---
 
@@ -188,10 +187,40 @@ graph TB
 ```mermaid
 graph TB
     subgraph "Firestore (Persistent)"
-        FS_Root[🗄️ Firestore Root]
+        FS_Root[Firestore Root]
         FS_Canvases[canvases/]
-        FS_Canvas[{canvasId}]
+        FS_Canvas[canvasId]
         FS_Metadata[metadata:<br/>createdAt, lastModified]
+        FS_Shapes[shapes/ subcollection]
+        FS_Shape[shapeId:<br/>id, type, x, y,<br/>width, height, fill,<br/>createdBy, timestamps]
+        
+        FS_Root --> FS_Canvases
+        FS_Canvases --> FS_Canvas
+        FS_Canvas --> FS_Metadata
+        FS_Canvas --> FS_Shapes
+        FS_Shapes --> FS_Shape
+    end
+    
+    subgraph "Realtime Database (Ephemeral)"
+        RT_Root[Realtime DB Root]
+        RT_Canvases[canvases/]
+        RT_Canvas[canvasId/]
+        RT_Presence[presence/]
+        RT_User[userId:<br/>userId, color,<br/>cursor: x y,<br/>timestamp, isActive]
+        RT_TempShapes[temp-shapes/]
+        RT_TempShape[shapeId:<br/>id, type, x, y,<br/>width, height, fill,<br/>isInProgress, userId]
+        RT_Locks[locks/]
+        RT_Lock[shapeId:<br/>userId, timestamp,<br/>shapeId]
+        
+        RT_Root --> RT_Canvases
+        RT_Canvases --> RT_Canvas
+        RT_Canvas --> RT_Presence
+        RT_Canvas --> RT_TempShapes
+        RT_Canvas --> RT_Locks
+        RT_Presence --> RT_User
+        RT_TempShapes --> RT_TempShape
+        RT_Locks --> RT_Lock
+    enddAt, lastModified]
         FS_Shapes[shapes/ subcollection]
         FS_Shape[{shapeId}:<br/>id, type, x, y,<br/>width, height, fill,<br/>createdBy, timestamps]
         
@@ -482,6 +511,11 @@ graph LR
 
 ```
 collab-canvas/
+├── project_scaffolding/         # Project planning documents
+│   ├── PRD.md                   # Product Requirements Document
+│   ├── TASK_LIST.md             # Development task list
+│   └── ARCHITECTURE.md          # This file - system architecture
+│
 ├── public/                      # Static assets
 ├── src/
 │   ├── components/              # React components
@@ -524,10 +558,7 @@ collab-canvas/
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
-├── README.md
-├── PRD.md                       # Product Requirements
-├── TASK_LIST.md                 # Development tasks
-└── ARCHITECTURE.md              # This file
+└── README.md
 ```
 
 ---

@@ -1,8 +1,7 @@
 # Task List - CollabCanvas MVP
 
 **Project:** CollabCanvas - Real-time Collaborative Canvas  
-**Version:** 1.0  
-**Last Updated:** October 14, 2025
+**Version:** 1.0
 
 ---
 
@@ -11,17 +10,17 @@
 Tasks are organized by MVP stages and must be completed sequentially within each stage. Each task includes acceptance criteria, dependencies, and implementation notes.
 
 **Status Key:**
-- ⬜ Not Started
-- 🟨 In Progress
-- ✅ Complete
-- ⛔ Blocked
+- [ ] Not Started
+- [~] In Progress
+- [x] Complete
+- [!] Blocked
 
 ---
 
 ## Stage 0: Project Setup
 
 ### Task 0.1: Initialize Project Boilerplate
-**Status:** ✅  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 30 minutes
 
@@ -29,11 +28,11 @@ Tasks are organized by MVP stages and must be completed sequentially within each
 Set up React + TypeScript + Vite project with all required dependencies.
 
 **Acceptance Criteria:**
-- [x] Vite project created with React-TS template
-- [x] All dependencies installed (konva, react-konva, firebase, uuid)
-- [x] Folder structure created (components, hooks, services, types, utils, store)
-- [x] `npm run dev` runs without errors
-- [x] Clean boilerplate (removed default CSS and App content)
+- [ ] Vite project created with React-TS template
+- [ ] All dependencies installed (konva, react-konva, firebase, uuid)
+- [ ] Folder structure created (components, hooks, services, types, utils, store)
+- [ ] `npm run dev` runs without errors
+- [ ] Clean boilerplate (removed default CSS and App content)
 
 **Dependencies:** None
 
@@ -47,7 +46,7 @@ npm install -D @types/uuid
 ---
 
 ### Task 0.2: Configure Firebase
-**Status:** ✅  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 30 minutes
 
@@ -55,13 +54,13 @@ npm install -D @types/uuid
 Set up Firebase project and configure both Firestore and Realtime Database.
 
 **Acceptance Criteria:**
-- [x] Firebase project created in console
-- [x] Firestore Database enabled (test mode)
-- [x] Realtime Database enabled (test mode)
-- [x] Anonymous Authentication enabled
-- [x] `.env` file created with all 7 Firebase config values
-- [x] `src/services/firebase.ts` created and exports `db`, `rtdb`, `auth`
-- [x] Firebase connection verified (no console errors)
+- [ ] Firebase project created in console
+- [ ] Firestore Database enabled (test mode)
+- [ ] Realtime Database enabled (test mode)
+- [ ] Anonymous Authentication enabled
+- [ ] `.env` file created with all 7 Firebase config values
+- [ ] `src/services/firebase.ts` created and exports `db`, `rtdb`, `auth`
+- [ ] Firebase connection verified (no console errors)
 
 **Dependencies:** Task 0.1
 
@@ -81,36 +80,12 @@ VITE_FIREBASE_APP_ID
 VITE_FIREBASE_DATABASE_URL
 ```
 
-**Completed Firebase Config:**
-```typescript
-import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getDatabase } from 'firebase/database';
-import { getAuth } from 'firebase/auth';
-
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-};
-
-const app = initializeApp(firebaseConfig);
-
-export const db = getFirestore(app);
-export const rtdb = getDatabase(app);
-export const auth = getAuth(app);
-```
-
 ---
 
 ## Stage 1: Canvas Display with Pan/Zoom
 
 ### Task 1.1: Create Basic Canvas Component
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 2 hours
 
@@ -148,7 +123,7 @@ const CANVAS_HEIGHT = 10000;
 ---
 
 ### Task 1.2: Implement Window Resize Handling
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** High  
 **Estimated Effort:** 1 hour
 
@@ -187,7 +162,7 @@ const adjustViewportOnResize = (
 ---
 
 ### Task 1.3: Implement Pan Functionality
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 2 hours
 
@@ -246,7 +221,7 @@ const constrainPosition = (
 ---
 
 ### Task 1.4: Implement Zoom Functionality
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 3 hours
 
@@ -320,7 +295,7 @@ const calculateZoomLimits = (viewport: Size): { min: number; max: number } => {
 ---
 
 ### Task 1.5: Add Visual Canvas Boundary
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Medium  
 **Estimated Effort:** 30 minutes
 
@@ -352,7 +327,7 @@ Add visual rectangle showing canvas boundaries for development/testing purposes.
 ---
 
 ### Task 1.6: Stage 1 Testing & Validation
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 1 hour
 
@@ -385,7 +360,7 @@ Thoroughly test all canvas, pan, and zoom functionality.
 ## Stage 2: Anonymous User Auth & Presence
 
 ### Task 2.1: Implement Anonymous Authentication
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 1 hour
 
@@ -446,7 +421,7 @@ const generateRandomColor = (): string => {
 ---
 
 ### Task 2.2: Implement Presence System (Realtime DB)
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 2 hours
 
@@ -521,7 +496,7 @@ canvases/{canvasId}/presence/{userId}
 ---
 
 ### Task 2.3: Implement Cursor Position Sync
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 2 hours
 
@@ -574,7 +549,7 @@ const useThrottle = (callback: Function, delay: number) => {
 ---
 
 ### Task 2.4: Create Multiplayer Cursor Component
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** High  
 **Estimated Effort:** 1.5 hours
 
@@ -630,7 +605,7 @@ const MultiplayerCursor: React.FC<Props> = ({ userId, color, x, y }) => {
 ---
 
 ### Task 2.5: Add User Presence Indicator UI
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Low  
 **Estimated Effort:** 30 minutes
 
@@ -666,7 +641,7 @@ Display list of active users in the toolbar or corner of screen.
 ---
 
 ### Task 2.6: Stage 2 Testing & Validation
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 1 hour
 
@@ -699,7 +674,7 @@ Test authentication and presence system with multiple users.
 ## Stage 3: Shape Creation & Manipulation
 
 ### Task 3.1: Create Rectangle Shape Type
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 1 hour
 
@@ -767,7 +742,7 @@ const createRectangle = (
 ---
 
 ### Task 3.2: Implement Draw Rectangle Mode Toggle
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** High  
 **Estimated Effort:** 1 hour
 
@@ -800,7 +775,7 @@ const [isDrawMode, setIsDrawMode] = useState(false);
 ---
 
 ### Task 3.3: Implement Rectangle Drawing Interaction
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 3 hours
 
@@ -914,7 +889,7 @@ const normalizeRect = (rect: Rectangle): Rectangle => {
 ---
 
 ### Task 3.4: Sync In-Progress Drawing to Realtime DB
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** High  
 **Estimated Effort:** 2 hours
 
@@ -985,7 +960,7 @@ const useTempShapes = (canvasId: string, currentUserId: string) => {
 ---
 
 ### Task 3.5: Save Completed Rectangles to Firestore
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 2 hours
 
@@ -1053,7 +1028,7 @@ const useShapes = (canvasId: string) => {
 ---
 
 ### Task 3.6: Render Shapes on Canvas
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 1 hour
 
@@ -1120,7 +1095,7 @@ const Shape: React.FC<ShapeProps> = ({
 ---
 
 ### Task 3.7: Implement Shape Repositioning (Drag)
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 3 hours
 
@@ -1209,7 +1184,7 @@ const constrainShapePosition = (
 ---
 
 ### Task 3.8: Implement Object Locking System
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** High  
 **Estimated Effort:** 2 hours
 
@@ -1291,7 +1266,7 @@ const isShapeLocked = isLocked(shape.id, user.uid);
 ---
 
 ### Task 3.9: Initialize Canvas on First Load
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Medium  
 **Estimated Effort:** 1 hour
 
@@ -1342,7 +1317,7 @@ useEffect(() => {
 ---
 
 ### Task 3.10: Test Shape Persistence Across Sessions
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** High  
 **Estimated Effort:** 30 minutes
 
@@ -1366,7 +1341,7 @@ Verify shapes persist when all users disconnect and reconnect.
 ---
 
 ### Task 3.11: Stage 3 Complete Testing & Validation
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 2 hours
 
@@ -1427,7 +1402,7 @@ Comprehensive testing of all shape creation and manipulation features.
 ## Stage 4: Polish & Deployment
 
 ### Task 4.1: Add Loading States
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Medium  
 **Estimated Effort:** 1 hour
 
@@ -1445,7 +1420,7 @@ Add loading indicators for auth, canvas initialization, and data loading.
 ---
 
 ### Task 4.2: Error Handling & Validation
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** High  
 **Estimated Effort:** 2 hours
 
@@ -1465,7 +1440,7 @@ Add comprehensive error handling throughout the app.
 ---
 
 ### Task 4.3: Performance Optimization
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** High  
 **Estimated Effort:** 2 hours
 
@@ -1492,7 +1467,7 @@ Optimize canvas performance for 500+ shapes and 5+ users.
 ---
 
 ### Task 4.4: Browser Compatibility Testing
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Medium  
 **Estimated Effort:** 1 hour
 
@@ -1516,7 +1491,7 @@ Test application across different browsers.
 ---
 
 ### Task 4.5: Security Rules Configuration
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** High  
 **Estimated Effort:** 1 hour
 
@@ -1555,7 +1530,7 @@ service cloud.firestore {
 ---
 
 ### Task 4.6: Environment Configuration for Deployment
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 30 minutes
 
@@ -1580,7 +1555,7 @@ npm run preview
 ---
 
 ### Task 4.7: Deploy to Vercel or Firebase Hosting
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 1 hour
 
@@ -1617,7 +1592,7 @@ firebase deploy
 ---
 
 ### Task 4.8: Final End-to-End Testing
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 2 hours
 
@@ -1651,7 +1626,7 @@ Complete end-to-end testing of deployed application.
 ---
 
 ### Task 4.9: Documentation & README
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** High  
 **Estimated Effort:** 1 hour
 
@@ -1675,7 +1650,7 @@ Create comprehensive README and documentation.
 ---
 
 ### Task 4.10: Create Demo Video
-**Status:** ⬜  
+**Status:** [ ]  
 **Priority:** Critical  
 **Estimated Effort:** 1 hour
 
