@@ -20,7 +20,7 @@ Tasks are organized by MVP stages and must be completed sequentially within each
 ## Stage 0: Project Setup
 
 ### Task 0.1: Initialize Project Boilerplate
-**Status:** [ ]  
+**Status:** [x]  
 **Priority:** Critical  
 **Estimated Effort:** 30 minutes
 
@@ -46,7 +46,7 @@ npm install -D @types/uuid
 ---
 
 ### Task 0.2: Configure Firebase
-**Status:** [ ]  
+**Status:** [x]  
 **Priority:** Critical  
 **Estimated Effort:** 30 minutes
 
