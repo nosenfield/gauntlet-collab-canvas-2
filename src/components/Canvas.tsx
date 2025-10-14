@@ -22,11 +22,15 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange }) => {
     const canvasWidth = CANVAS_WIDTH * scale;
     const canvasHeight = CANVAS_HEIGHT * scale;
     
-    const maxX = Math.max(0, canvasWidth - viewport.width);
-    const maxY = Math.max(0, canvasHeight - viewport.height);
+    // In Konva, positive position moves content right/down, showing left/top content
+    // We need to constrain so we never show outside the canvas bounds
+    const minX = Math.min(0, viewport.width - canvasWidth);
+    const minY = Math.min(0, viewport.height - canvasHeight);
+    const maxX = 0;
+    const maxY = 0;
     
-    const constrainedX = Math.max(0, Math.min(maxX, pos.x));
-    const constrainedY = Math.max(0, Math.min(maxY, pos.y));
+    const constrainedX = Math.max(minX, Math.min(maxX, pos.x));
+    const constrainedY = Math.max(minY, Math.min(maxY, pos.y));
     
     return { x: constrainedX, y: constrainedY };
   };
@@ -113,13 +117,13 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange }) => {
       return;
     }
     
-    // Handle pan
+    // Handle pan - corrected for Konva coordinate system
     const deltaX = e.evt.deltaX;
     const deltaY = e.evt.deltaY;
     
     const newPos = {
-      x: stagePos.x - deltaX,
-      y: stagePos.y - deltaY,
+      x: stagePos.x - deltaX,  // Negative deltaX moves content right (shows left content)
+      y: stagePos.y - deltaY,  // Negative deltaY moves content down (shows top content)
     };
     
     // Constrain to boundaries
