@@ -1,13 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Stage, Layer, Rect } from 'react-konva';
+import { ref, update } from 'firebase/database';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, TOOLBAR_HEIGHT } from '../types/canvas';
 import type { Point, Size } from '../types/canvas';
+import type { User } from '../types/user';
+import type { PresenceData } from '../types/presence';
+import { useThrottle } from '../hooks/useThrottle';
+import { rtdb } from '../services/firebase';
+import MultiplayerCursor from './MultiplayerCursor';
 
 interface CanvasProps {
   onStageChange?: (pos: Point, scale: number) => void;
+  user: User | null;
+  otherUsers: PresenceData[];
 }
 
-const Canvas: React.FC<CanvasProps> = ({ onStageChange }) => {
+const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers }) => {
   const [stagePos, setStagePos] = useState<Point>({ x: 0, y: 0 });
   const [stageScale, setStageScale] = useState(1);
   const [windowSize, setWindowSize] = useState<Size>({ 
@@ -16,6 +24,7 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange }) => {
   });
 
   const stageRef = useRef<any>(null);
+
 
   // Constraint functions
   const constrainPosition = (pos: Point, scale: number, viewport: Size): Point => {
@@ -75,6 +84,27 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange }) => {
     const minScale = maxDimension / Math.max(CANVAS_WIDTH, CANVAS_HEIGHT);
     
     return { min: minScale, max: maxScale };
+  };
+
+  // Cursor position tracking
+  const throttledCursorUpdate = useThrottle((x: number, y: number) => {
+    if (!user) return;
+    
+    const presenceRef = ref(rtdb, `canvases/default/presence/${user.uid}/cursor`);
+    update(presenceRef, { x, y }).catch(console.error);
+  }, 33); // ~30fps
+
+  const handleMouseMove = (e: any) => {
+    const stage = e.target.getStage();
+    const pointerPos = stage.getPointerPosition();
+    
+    if (pointerPos) {
+      // Convert to canvas coordinates
+      const x = (pointerPos.x - stagePos.x) / stageScale;
+      const y = (pointerPos.y - stagePos.y) / stageScale;
+      
+      throttledCursorUpdate(x, y);
+    }
   };
 
   // Notify parent of stage changes
@@ -176,6 +206,7 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange }) => {
         scaleY={stageScale}
         draggable={false}
         onWheel={handleWheel}
+        onMouseMove={handleMouseMove}
       >
         <Layer>
           {/* Dark gray background */}
@@ -236,6 +267,17 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange }) => {
             fill="transparent"
             listening={false}
           />
+
+          {/* Multiplayer cursors */}
+          {otherUsers.map((user) => (
+            <MultiplayerCursor
+              key={user.userId}
+              userId={user.userId}
+              color={user.color}
+              x={user.cursor.x}
+              y={user.cursor.y}
+            />
+          ))}
         </Layer>
       </Stage>
     </div>
