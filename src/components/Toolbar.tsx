@@ -7,9 +7,18 @@ interface ToolbarProps {
   stageScale?: number;
   otherUsers?: PresenceData[];
   userColor?: string;
+  isDrawMode?: boolean;
+  onToggleDrawMode?: () => void;
 }
 
-const Toolbar: React.FC<ToolbarProps> = ({ stagePos, stageScale, otherUsers = [], userColor }) => {
+const Toolbar: React.FC<ToolbarProps> = ({ 
+  stagePos, 
+  stageScale, 
+  otherUsers = [], 
+  userColor, 
+  isDrawMode = false, 
+  onToggleDrawMode 
+}) => {
   return (
     <div 
       style={{
@@ -27,9 +36,30 @@ const Toolbar: React.FC<ToolbarProps> = ({ stagePos, stageScale, otherUsers = []
         zIndex: 1000
       }}
     >
-      <h1 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
-        CollabCanvas MVP
-      </h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <h1 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
+          CollabCanvas MVP
+        </h1>
+        
+        {/* Draw mode toggle */}
+        <button
+          onClick={onToggleDrawMode}
+          style={{
+            padding: '6px 12px',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            backgroundColor: isDrawMode ? '#007bff' : '#fff',
+            color: isDrawMode ? '#fff' : '#333',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+          title={isDrawMode ? 'Exit draw mode (R)' : 'Enter draw mode (R)'}
+        >
+          Draw Rect {isDrawMode ? '(ON)' : '(OFF)'}
+        </button>
+      </div>
       <div style={{ fontSize: '12px', color: '#666', display: 'flex', alignItems: 'center', gap: '16px' }}>
         {stagePos && stageScale && (
           <>

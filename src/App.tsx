@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Toolbar from './components/Toolbar';
 import Canvas from './components/Canvas';
 import { useAuth } from './hooks/useAuth';
@@ -8,6 +8,7 @@ import type { Point } from './types/canvas';
 function App() {
   const [stagePos, setStagePos] = useState<Point>({ x: 0, y: 0 });
   const [stageScale, setStageScale] = useState(1);
+  const [isDrawMode, setIsDrawMode] = useState(false);
 
   // Authentication and presence
   const { user, userColor, isLoading: authLoading, error: authError } = useAuth();
@@ -16,6 +17,18 @@ function App() {
     userColor,
     'default'
   );
+
+  // Keyboard shortcut for draw mode toggle
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === 'r' && !e.ctrlKey && !e.metaKey) {
+        setIsDrawMode(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   // Show loading state
   if (authLoading) {
@@ -57,6 +70,8 @@ function App() {
         stageScale={stageScale}
         otherUsers={otherUsers}
         userColor={userColor}
+        isDrawMode={isDrawMode}
+        onToggleDrawMode={() => setIsDrawMode(!isDrawMode)}
       />
       <div style={{ marginTop: '40px', width: '100%', height: 'calc(100vh - 40px)' }}>
         <Canvas 
@@ -66,6 +81,8 @@ function App() {
           }}
           user={user}
           otherUsers={otherUsers}
+          isDrawMode={isDrawMode}
+          userColor={userColor}
         />
       </div>
     </div>

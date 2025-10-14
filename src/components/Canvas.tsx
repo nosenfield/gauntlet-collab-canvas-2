@@ -13,9 +13,11 @@ interface CanvasProps {
   onStageChange?: (pos: Point, scale: number) => void;
   user: User | null;
   otherUsers: PresenceData[];
+  isDrawMode: boolean;
+  userColor: string;
 }
 
-const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers }) => {
+const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDrawMode, userColor }) => {
   const [stagePos, setStagePos] = useState<Point>({ x: 0, y: 0 });
   const [stageScale, setStageScale] = useState(1);
   const [windowSize, setWindowSize] = useState<Size>({ 
