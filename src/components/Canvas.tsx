@@ -5,7 +5,10 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT, TOOLBAR_HEIGHT } from '../types/canvas';
 import type { Point, Size } from '../types/canvas';
 import type { User } from '../types/user';
 import type { PresenceData } from '../types/presence';
+import type { Rectangle, TempShape } from '../types/shape';
 import { useThrottle } from '../hooks/useThrottle';
+import { useTempShapes } from '../hooks/useTempShapes';
+import { createRectangle, normalizeRect } from '../utils/shapeHelpers';
 import { rtdb } from '../services/firebase';
 import MultiplayerCursor from './MultiplayerCursor';
 
@@ -27,6 +30,15 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
 
   const stageRef = useRef<any>(null);
 
+  // Drawing state
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [currentRect, setCurrentRect] = useState<Rectangle | null>(null);
+
+  // Temporary shapes for real-time drawing sync
+  const { tempShapes, saveTempShape, removeTempShape } = useTempShapes(
+    'default',
+    user?.uid || null
+  );
 
   // Constraint functions
   const constrainPosition = (pos: Point, scale: number, viewport: Size): Point => {
@@ -96,6 +108,19 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
     update(presenceRef, { x, y }).catch(console.error);
   }, 33); // ~30fps
 
+  // Throttled temp shape update for real-time sync
+  const throttledTempShapeUpdate = useThrottle((rect: Rectangle) => {
+    if (!user) return;
+    
+    const tempShape: TempShape = {
+      ...rect,
+      isInProgress: true,
+      userId: user.uid,
+    };
+    
+    saveTempShape(tempShape);
+  }, 33); // ~30fps
+
   const handleMouseMove = (e: any) => {
     const stage = e.target.getStage();
     const pointerPos = stage.getPointerPosition();
@@ -105,8 +130,86 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
       const x = (pointerPos.x - stagePos.x) / stageScale;
       const y = (pointerPos.y - stagePos.y) / stageScale;
       
+      // Update cursor position for presence
       throttledCursorUpdate(x, y);
+      
+      // Handle drawing if in draw mode
+      if (isDrawing && currentRect && isDrawMode) {
+        // Constrain to canvas boundaries
+        const constrainedX = Math.max(0, Math.min(CANVAS_WIDTH, x));
+        const constrainedY = Math.max(0, Math.min(CANVAS_HEIGHT, y));
+        
+        const width = constrainedX - currentRect.x;
+        const height = constrainedY - currentRect.y;
+        
+        const updatedRect = {
+          ...currentRect,
+          width,
+          height,
+        };
+        
+        setCurrentRect(updatedRect);
+        
+        // Sync to Realtime DB for other users
+        throttledTempShapeUpdate(updatedRect);
+      }
     }
+  };
+
+  const handleMouseDown = (e: any) => {
+    if (!isDrawMode || !user) return;
+    
+    const stage = e.target.getStage();
+    const pointerPos = stage.getPointerPosition();
+    
+    if (pointerPos) {
+      const x = (pointerPos.x - stagePos.x) / stageScale;
+      const y = (pointerPos.y - stagePos.y) / stageScale;
+      
+      // Constrain to canvas boundaries
+      const constrainedX = Math.max(0, Math.min(CANVAS_WIDTH, x));
+      const constrainedY = Math.max(0, Math.min(CANVAS_HEIGHT, y));
+      
+      const initialRect = createRectangle(
+        constrainedX,
+        constrainedY,
+        0,
+        0,
+        userColor,
+        user.uid
+      );
+      
+      setIsDrawing(true);
+      setCurrentRect(initialRect);
+      
+      // Save initial temp shape to Realtime DB
+      const tempShape: TempShape = {
+        ...initialRect,
+        isInProgress: true,
+        userId: user.uid,
+      };
+      saveTempShape(tempShape);
+    }
+  };
+
+  const handleMouseUp = () => {
+    if (!isDrawing || !currentRect) return;
+    
+    setIsDrawing(false);
+    
+    // Remove temp shape from Realtime DB
+    removeTempShape();
+    
+    // Check minimum size (10x10px)
+    if (Math.abs(currentRect.width) >= 10 && Math.abs(currentRect.height) >= 10) {
+      // Normalize negative dimensions
+      const normalizedRect = normalizeRect(currentRect);
+      
+      // TODO: Save to Firestore (Task 3.5)
+      console.log('Rectangle created:', normalizedRect);
+    }
+    
+    setCurrentRect(null);
   };
 
   // Notify parent of stage changes
@@ -209,6 +312,8 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
         draggable={false}
         onWheel={handleWheel}
         onMouseMove={handleMouseMove}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
       >
         <Layer>
           {/* Dark gray background */}
@@ -269,6 +374,37 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
             fill="transparent"
             listening={false}
           />
+
+          {/* Current rectangle being drawn */}
+          {currentRect && (
+            <Rect
+              x={currentRect.x}
+              y={currentRect.y}
+              width={currentRect.width}
+              height={currentRect.height}
+              fill={currentRect.fill}
+              opacity={0.7}
+              stroke="#000"
+              strokeWidth={1}
+              listening={false}
+            />
+          )}
+
+          {/* Other users' temp shapes */}
+          {tempShapes.map((shape) => (
+            <Rect
+              key={`temp-${shape.userId}`}
+              x={shape.x}
+              y={shape.y}
+              width={shape.width}
+              height={shape.height}
+              fill={shape.fill}
+              opacity={0.5}
+              stroke="#000"
+              strokeWidth={1}
+              listening={false}
+            />
+          ))}
 
           {/* Multiplayer cursors */}
           {otherUsers.map((user) => (
