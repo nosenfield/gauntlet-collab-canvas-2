@@ -12,6 +12,23 @@ const generateRandomColor = (): string => {
   return colors[Math.floor(Math.random() * colors.length)];
 };
 
+const getUserColorFromStorage = (userId: string): string | null => {
+  try {
+    const stored = localStorage.getItem(`userColor_${userId}`);
+    return stored;
+  } catch {
+    return null;
+  }
+};
+
+const saveUserColorToStorage = (userId: string, color: string): void => {
+  try {
+    localStorage.setItem(`userColor_${userId}`, color);
+  } catch {
+    // Silently fail if localStorage is not available
+  }
+};
+
 export const useAuth = (): UserState => {
   const [user, setUser] = useState<User | null>(null);
   const [userColor, setUserColor] = useState<string>('');
@@ -25,8 +42,13 @@ export const useAuth = (): UserState => {
         setError(null);
 
         if (firebaseUser) {
-          // User is already signed in
-          const color = generateRandomColor();
+          // User is already signed in - check for existing color
+          let color = getUserColorFromStorage(firebaseUser.uid);
+          if (!color) {
+            color = generateRandomColor();
+            saveUserColorToStorage(firebaseUser.uid, color);
+          }
+          
           setUser({
             uid: firebaseUser.uid,
             color,
@@ -36,7 +58,12 @@ export const useAuth = (): UserState => {
         } else {
           // No user, sign in anonymously
           const result = await signInAnonymously(auth);
-          const color = generateRandomColor();
+          let color = getUserColorFromStorage(result.user.uid);
+          if (!color) {
+            color = generateRandomColor();
+            saveUserColorToStorage(result.user.uid, color);
+          }
+          
           setUser({
             uid: result.user.uid,
             color,
