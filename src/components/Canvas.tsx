@@ -12,12 +12,14 @@ import { useShapes } from '../hooks/useShapes';
 import { useShapeDragging } from '../hooks/useShapeDragging';
 import { useDragPositions } from '../hooks/useDragPositions';
 import { useLocks } from '../hooks/useLocks';
-import { createRectangle, normalizeRect } from '../utils/shapeHelpers';
+import { normalizeRect, createInitialRectangle } from '../utils/shapeHelpers';
 import { rtdb } from '../services/firebase';
 import MultiplayerCursor from './MultiplayerCursor';
 import ShapeComponent from './ShapeComponent';
+import { LoadingOverlay } from './LoadingSpinner';
 
 interface CanvasProps {
+  canvasId: string;
   onStageChange?: (pos: Point, scale: number) => void;
   user: User | null;
   otherUsers: PresenceData[];
@@ -25,7 +27,7 @@ interface CanvasProps {
   userColor: string;
 }
 
-const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDrawMode, userColor }) => {
+const Canvas: React.FC<CanvasProps> = ({ canvasId, onStageChange, user, otherUsers, isDrawMode, userColor }) => {
   const [stagePos, setStagePos] = useState<Point>({ x: 0, y: 0 });
   const [stageScale, setStageScale] = useState(1);
   const [windowSize, setWindowSize] = useState<Size>({ 
@@ -41,16 +43,16 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
 
   // Temporary shapes for real-time drawing sync
   const { tempShapes, saveTempShape, removeTempShape } = useTempShapes(
-    'default',
+    canvasId,
     user?.uid || null
   );
 
   // Persistent shapes from Firestore
-  const { shapes, addShape } = useShapes('default');
+  const { shapes, addShape, isLoading: shapesLoading } = useShapes(canvasId);
 
   // Shape dragging functionality
-  const { startDrag, updateDrag, endDrag } = useShapeDragging('default', user?.uid || null);
-  const { dragPositions } = useDragPositions('default', user?.uid || null);
+  const { startDrag, updateDrag, endDrag } = useShapeDragging(canvasId, user?.uid || null);
+  const { dragPositions } = useDragPositions(canvasId, user?.uid || null);
   
   // Locking system
   const { 
@@ -59,7 +61,7 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
     isLocked, 
     isLockedByCurrentUser, 
     getCurrentUserLock 
-  } = useLocks('default', user?.uid || null);
+  } = useLocks(canvasId, user?.uid || null);
 
   // Constraint functions
   const constrainPosition = (pos: Point, scale: number, viewport: Size): Point => {
@@ -125,8 +127,10 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
   const throttledCursorUpdate = useThrottle((x: number, y: number) => {
     if (!user) return;
     
-    const presenceRef = ref(rtdb, `canvases/default/presence/${user.uid}/cursor`);
-    update(presenceRef, { x, y }).catch(console.error);
+    const presenceRef = ref(rtdb, `canvases/${canvasId}/presence/${user.uid}/cursor`);
+    update(presenceRef, { x, y }).catch((error) => {
+      console.error('Failed to update cursor position:', error);
+    });
   }, 33); // ~30fps
 
   // Throttled temp shape update for real-time sync
@@ -191,11 +195,9 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
       const constrainedX = Math.max(0, Math.min(CANVAS_WIDTH, x));
       const constrainedY = Math.max(0, Math.min(CANVAS_HEIGHT, y));
       
-      const initialRect = createRectangle(
+      const initialRect = createInitialRectangle(
         constrainedX,
         constrainedY,
-        0,
-        0,
         userColor,
         user.uid
       );
@@ -326,7 +328,8 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
   };
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <LoadingOverlay isLoading={shapesLoading} message="Loading shapes...">
+      <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <Stage
         ref={stageRef}
         width={windowSize.width}
@@ -488,7 +491,8 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
           ))}
         </Layer>
       </Stage>
-    </div>
+      </div>
+    </LoadingOverlay>
   );
 };
 

@@ -1,22 +1,46 @@
 import { useState, useEffect } from 'react';
 import Toolbar from './components/Toolbar';
 import Canvas from './components/Canvas';
+import LoadingSpinner from './components/LoadingSpinner';
 import { useAuth } from './hooks/useAuth';
 import { usePresence } from './hooks/usePresence';
+import { initializeCanvas } from './services/canvasService';
 import type { Point } from './types/canvas';
 
 function App() {
   const [stagePos, setStagePos] = useState<Point>({ x: 0, y: 0 });
   const [stageScale, setStageScale] = useState(1);
   const [isDrawMode, setIsDrawMode] = useState(false);
+  const [canvasId, setCanvasId] = useState<string | null>(null);
+  const [canvasLoading, setCanvasLoading] = useState(true);
+  const [canvasError, setCanvasError] = useState<string | null>(null);
 
   // Authentication and presence
   const { user, userColor, isLoading: authLoading, error: authError } = useAuth();
   const { otherUsers } = usePresence(
     user?.uid || null,
     userColor,
-    'default'
+    canvasId || 'default'
   );
+
+  // Initialize canvas on first load
+  useEffect(() => {
+    const initCanvas = async () => {
+      try {
+        setCanvasLoading(true);
+        setCanvasError(null);
+        const id = await initializeCanvas();
+        setCanvasId(id);
+      } catch (error) {
+        console.error('Failed to initialize canvas:', error);
+        setCanvasError(error instanceof Error ? error.message : 'Failed to initialize canvas');
+      } finally {
+        setCanvasLoading(false);
+      }
+    };
+
+    initCanvas();
+  }, []);
 
   // Keyboard shortcut for draw mode toggle
   useEffect(() => {
@@ -31,7 +55,8 @@ function App() {
   }, []);
 
   // Show loading state
-  if (authLoading) {
+  if (authLoading || canvasLoading) {
+    const loadingMessage = authLoading ? 'Authenticating...' : 'Initializing canvas...';
     return (
       <div style={{ 
         width: '100vw', 
@@ -41,13 +66,13 @@ function App() {
         justifyContent: 'center',
         backgroundColor: '#f0f0f0'
       }}>
-        <div>Loading...</div>
+        <LoadingSpinner size="large" message={loadingMessage} />
       </div>
     );
   }
 
   // Show error state
-  if (authError) {
+  if (authError || canvasError) {
     return (
       <div style={{ 
         width: '100vw', 
@@ -58,7 +83,7 @@ function App() {
         backgroundColor: '#f0f0f0',
         color: 'red'
       }}>
-        <div>Error: {authError}</div>
+        <div>Error: {authError || canvasError}</div>
       </div>
     );
   }
@@ -75,6 +100,7 @@ function App() {
       />
       <div style={{ marginTop: '40px', width: '100%', height: 'calc(100vh - 40px)' }}>
         <Canvas 
+          canvasId={canvasId || 'default'}
           onStageChange={(pos, scale) => {
             setStagePos(pos);
             setStageScale(scale);
