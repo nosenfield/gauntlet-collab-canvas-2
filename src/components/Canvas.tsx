@@ -9,9 +9,12 @@ import type { Rectangle, TempShape } from '../types/shape';
 import { useThrottle } from '../hooks/useThrottle';
 import { useTempShapes } from '../hooks/useTempShapes';
 import { useShapes } from '../hooks/useShapes';
+import { useShapeDragging } from '../hooks/useShapeDragging';
+import { useDragPositions } from '../hooks/useDragPositions';
 import { createRectangle, normalizeRect } from '../utils/shapeHelpers';
 import { rtdb } from '../services/firebase';
 import MultiplayerCursor from './MultiplayerCursor';
+import ShapeComponent from './ShapeComponent';
 
 interface CanvasProps {
   onStageChange?: (pos: Point, scale: number) => void;
@@ -43,6 +46,10 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
 
   // Persistent shapes from Firestore
   const { shapes, addShape } = useShapes('default');
+
+  // Shape dragging functionality
+  const { startDrag, updateDrag, endDrag } = useShapeDragging('default', user?.uid || null);
+  const { dragPositions } = useDragPositions('default', user?.uid || null);
 
   // Constraint functions
   const constrainPosition = (pos: Point, scale: number, viewport: Size): Point => {
@@ -400,19 +407,30 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
           )}
 
           {/* Persistent shapes from Firestore */}
-          {shapes.map((shape) => (
-            <Rect
-              key={shape.id}
-              x={shape.x}
-              y={shape.y}
-              width={shape.width}
-              height={shape.height}
-              fill={shape.fill}
-              stroke="#000"
-              strokeWidth={1}
-              listening={false}
-            />
-          ))}
+          {shapes.map((shape) => {
+            // Check if this shape is being dragged by another user
+            const isBeingDragged = Object.values(dragPositions).some(
+              dragPos => dragPos.shapeId === shape.id
+            );
+            
+            // Get the drag position if this shape is being dragged
+            const dragPos = Object.values(dragPositions).find(
+              dragPos => dragPos.shapeId === shape.id
+            );
+            
+            const displayShape = dragPos ? { ...shape, x: dragPos.x, y: dragPos.y } : shape;
+            
+            return (
+              <ShapeComponent
+                key={shape.id}
+                shape={displayShape}
+                isLocked={isBeingDragged}
+                onDragStart={(shapeId) => startDrag(shapeId, shape.x, shape.y)}
+                onDragMove={(shapeId, x, y) => updateDrag(shapeId, x, y)}
+                onDragEnd={(shapeId, x, y) => endDrag(shapeId, x, y)}
+              />
+            );
+          })}
 
           {/* Other users' temp shapes */}
           {tempShapes.map((shape) => (
