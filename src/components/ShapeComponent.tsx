@@ -6,6 +6,8 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../types/canvas';
 
 interface ShapeComponentProps {
   shape: Shape;
+  isLocked?: boolean;
+  isLockedByCurrentUser?: boolean;
   onDragStart?: (shapeId: string) => void;
   onDragMove?: (shapeId: string, x: number, y: number, width: number, height: number) => void;
   onDragEnd?: (shapeId: string, x: number, y: number, width: number, height: number) => void;
@@ -13,11 +15,21 @@ interface ShapeComponentProps {
 
 const ShapeComponent: React.FC<ShapeComponentProps> = ({ 
   shape, 
+  isLocked = false,
+  isLockedByCurrentUser = false,
   onDragStart,
   onDragMove,
   onDragEnd
 }) => {
   if (shape.type === 'rectangle') {
+    // Determine visual styling based on lock status
+    const strokeColor = isLocked ? '#ff0000' : '#000';
+    const strokeWidth = isLocked ? 3 : 1;
+    const isDraggable = !isLocked; // Only allow dragging if not locked by another user
+    
+    // Optional: Add visual indicator for shapes locked by current user
+    const opacity = isLockedByCurrentUser ? 0.9 : 1.0;
+    
     return (
       <Rect
         x={shape.x}
@@ -25,9 +37,10 @@ const ShapeComponent: React.FC<ShapeComponentProps> = ({
         width={shape.width}
         height={shape.height}
         fill={shape.fill}
-        stroke="#000"
-        strokeWidth={1}
-        draggable={true}
+        opacity={opacity}
+        stroke={strokeColor}
+        strokeWidth={strokeWidth}
+        draggable={isDraggable}
         onDragStart={() => onDragStart?.(shape.id)}
         onDragMove={(e) => {
           const newX = e.target.x();

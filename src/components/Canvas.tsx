@@ -11,6 +11,7 @@ import { useTempShapes } from '../hooks/useTempShapes';
 import { useShapes } from '../hooks/useShapes';
 import { useShapeDragging } from '../hooks/useShapeDragging';
 import { useDragPositions } from '../hooks/useDragPositions';
+import { useLocks } from '../hooks/useLocks';
 import { createRectangle, normalizeRect } from '../utils/shapeHelpers';
 import { rtdb } from '../services/firebase';
 import MultiplayerCursor from './MultiplayerCursor';
@@ -50,6 +51,15 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
   // Shape dragging functionality
   const { startDrag, updateDrag, endDrag } = useShapeDragging('default', user?.uid || null);
   const { dragPositions } = useDragPositions('default', user?.uid || null);
+  
+  // Locking system
+  const { 
+    acquireLock, 
+    releaseLock, 
+    isLocked, 
+    isLockedByCurrentUser, 
+    getCurrentUserLock 
+  } = useLocks('default', user?.uid || null);
 
   // Constraint functions
   const constrainPosition = (pos: Point, scale: number, viewport: Size): Point => {
@@ -414,13 +424,38 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
             );
             const displayShape = dragPos ? { ...shape, x: dragPos.x, y: dragPos.y } : shape;
             
+            // Check lock status
+            const shapeIsLocked = isLocked(shape.id);
+            const shapeIsLockedByCurrentUser = isLockedByCurrentUser(shape.id);
+            
             return (
               <ShapeComponent
                 key={shape.id}
                 shape={displayShape}
-                onDragStart={(shapeId) => startDrag(shapeId, shape.x, shape.y)}
+                isLocked={shapeIsLocked}
+                isLockedByCurrentUser={shapeIsLockedByCurrentUser}
+                onDragStart={async (shapeId) => {
+                  // Check if user already has a lock on another shape
+                  const currentUserLock = getCurrentUserLock();
+                  if (currentUserLock && currentUserLock !== shapeId) {
+                    console.log(`User already has lock on shape ${currentUserLock}, cannot lock ${shapeId}`);
+                    return;
+                  }
+                  
+                  // Try to acquire lock before starting drag
+                  const lockAcquired = await acquireLock(shapeId);
+                  if (lockAcquired) {
+                    startDrag(shapeId, shape.x, shape.y);
+                  } else {
+                    console.log(`Failed to acquire lock for shape ${shapeId}`);
+                  }
+                }}
                 onDragMove={(shapeId, x, y, width, height) => updateDrag(shapeId, x, y, width, height)}
-                onDragEnd={(shapeId, x, y, width, height) => endDrag(shapeId, x, y, width, height)}
+                onDragEnd={async (shapeId, x, y, width, height) => {
+                  await endDrag(shapeId, x, y, width, height);
+                  // Release lock after drag ends
+                  await releaseLock(shapeId);
+                }}
               />
             );
           })}
