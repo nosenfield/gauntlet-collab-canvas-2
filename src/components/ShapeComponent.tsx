@@ -6,7 +6,6 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../types/canvas';
 
 interface ShapeComponentProps {
   shape: Shape;
-  isLocked?: boolean;
   onDragStart?: (shapeId: string) => void;
   onDragMove?: (shapeId: string, x: number, y: number, width: number, height: number) => void;
   onDragEnd?: (shapeId: string, x: number, y: number, width: number, height: number) => void;
@@ -14,7 +13,6 @@ interface ShapeComponentProps {
 
 const ShapeComponent: React.FC<ShapeComponentProps> = ({ 
   shape, 
-  isLocked = false,
   onDragStart,
   onDragMove,
   onDragEnd
@@ -27,9 +25,9 @@ const ShapeComponent: React.FC<ShapeComponentProps> = ({
         width={shape.width}
         height={shape.height}
         fill={shape.fill}
-        stroke={isLocked ? '#ff0000' : '#000'}
-        strokeWidth={isLocked ? 3 : 1}
-        draggable={!isLocked}
+        stroke="#000"
+        strokeWidth={1}
+        draggable={true}
         onDragStart={() => onDragStart?.(shape.id)}
         onDragMove={(e) => {
           const newX = e.target.x();

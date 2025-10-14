@@ -189,7 +189,8 @@ Successfully implemented the core shape creation and manipulation functionality 
 5. **`src/hooks/useTempShapes.ts`** - Temporary shape management hook
 6. **`src/hooks/useShapeDragging.ts`** - Shape drag management hook
 7. **`src/hooks/useDragPositions.ts`** - Real-time drag position tracking hook
-8. **`src/components/ShapeComponent.tsx`** - Individual shape renderer component
+8. **`src/hooks/useThrottle.ts`** - Throttling utility hook
+9. **`src/components/ShapeComponent.tsx`** - Individual shape renderer component
 
 ### Modified Files
 1. **`src/components/Toolbar.tsx`** - Added draw mode toggle button
@@ -270,6 +271,34 @@ interface TempShape extends Rectangle {
 **Enhancement:** Created reusable `ShapeComponent` with proper event handling
 **Impact:** Easier to extend for future shape types
 
+### 5. Drag Position Storage Path
+**Original Plan:** Store drag positions at `/temp-shapes/{shapeId}`  
+**Actual Implementation:** Store drag positions at `/drag-positions/{userId}`  
+**Reason:** Simpler conflict resolution and automatic cleanup with user-keyed data  
+**Impact:** Each user can only drag one shape at a time (acceptable UX limitation)
+
+**Technical Details:**
+- userId-keyed structure provides implicit "slot" ownership
+- Eliminates need for complex shapeId-based conflict resolution
+- Automatic cleanup via onDisconnect() on user path
+- Position data includes shapeId for reverse lookup
+- Aligns with single-user-single-drag interaction model
+
+**Documentation Updated:**
+- ARCHITECTURE.md corrected to show `/drag-positions/{userId}`
+- TASK_LIST.md Task 3.7 example code updated
+- Added design decision rationale to ARCHITECTURE.md
+
+### 6. Temp Shapes Path Clarification
+**Original Plan:** Documentation showed `/temp-shapes/{shapeId-or-userId}`  
+**Actual Implementation:** Consistently uses `/temp-shapes/{userId}`  
+**Reason:** Each user has one in-progress drawing at a time  
+**Impact:** None - implementation matches Task 3.4 requirements
+
+**Documentation Updated:**
+- ARCHITECTURE.md clarified to show `/temp-shapes/{userId}` consistently
+- Removed ambiguous "shapeId-or-userId" notation
+
 ---
 
 ## Architecture Compliance
@@ -323,10 +352,22 @@ interface TempShape extends Rectangle {
 - ✅ Canvas boundary constraints
 - ✅ Multi-user interaction scenarios
 
-### Known Issues
-- **Race Conditions:** Multiple users can drag the same shape simultaneously
-- **Lock System:** Object locking system not yet implemented
-- **Error Handling:** Basic error handling implemented, could be enhanced
+### Known Issues & Limitations
+
+### 1. No Object Locking System (Task 3.8 Not Implemented)
+- Multiple users can drag the same shape simultaneously
+- **Impact:** Race conditions possible when users drag same shape
+- **Mitigation:** Task 3.8 will implement full locking with visual indicators
+- **Status:** Intentionally deferred to maintain clean task separation
+
+### 2. Single Drag Per User
+- Each user can only drag one shape at a time (userId-keyed drag positions)
+- **Impact:** Cannot start multiple concurrent drag operations
+- **Mitigation:** Acceptable for MVP - single-drag UX is standard
+
+### 3. Basic Error Handling
+- **Impact:** Could be enhanced for production use
+- **Status:** Sufficient for MVP demonstration
 
 ### Performance Testing
 - ✅ 60 FPS maintained during all operations

@@ -408,23 +408,16 @@ const Canvas: React.FC<CanvasProps> = ({ onStageChange, user, otherUsers, isDraw
 
           {/* Persistent shapes from Firestore */}
           {shapes.map((shape) => {
-            // Check if this shape is being dragged by another user
-            const isBeingDragged = Object.values(dragPositions).some(
-              dragPos => dragPos.shapeId === shape.id
-            );
-            
-            // Get the drag position if this shape is being dragged
+            // Get drag position if this shape is being dragged by another user
             const dragPos = Object.values(dragPositions).find(
               dragPos => dragPos.shapeId === shape.id
             );
-            
             const displayShape = dragPos ? { ...shape, x: dragPos.x, y: dragPos.y } : shape;
             
             return (
               <ShapeComponent
                 key={shape.id}
                 shape={displayShape}
-                isLocked={isBeingDragged}
                 onDragStart={(shapeId) => startDrag(shapeId, shape.x, shape.y)}
                 onDragMove={(shapeId, x, y, width, height) => updateDrag(shapeId, x, y, width, height)}
                 onDragEnd={(shapeId, x, y, width, height) => endDrag(shapeId, x, y, width, height)}

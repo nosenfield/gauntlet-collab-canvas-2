@@ -238,7 +238,9 @@ graph TB
         RT_Presence[presence/]
         RT_User[{userId}:<br/>userId, color,<br/>cursor: {x, y},<br/>timestamp, isActive]
         RT_TempShapes[temp-shapes/]
-        RT_TempShape[{shapeId}:<br/>id, type, x, y,<br/>width, height, fill,<br/>isInProgress, userId]
+        RT_TempShape[{userId}:<br/>id, type, x, y,<br/>width, height, fill,<br/>isInProgress, userId]
+        RT_DragPositions[drag-positions/]
+        RT_DragPos[{userId}:<br/>shapeId, x, y,<br/>timestamp, userId]
         RT_Locks[locks/]
         RT_Lock[{shapeId}:<br/>userId, timestamp,<br/>shapeId]
         
@@ -246,9 +248,11 @@ graph TB
         RT_Canvases --> RT_Canvas
         RT_Canvas --> RT_Presence
         RT_Canvas --> RT_TempShapes
+        RT_Canvas --> RT_DragPositions
         RT_Canvas --> RT_Locks
         RT_Presence --> RT_User
         RT_TempShapes --> RT_TempShape
+        RT_DragPositions --> RT_DragPos
         RT_Locks --> RT_Lock
     end
 ```
@@ -331,7 +335,7 @@ sequenceDiagram
     Browser B->>User B: See final rectangle
 ```
 
-### Flow 3: Repositioning a Shape (with Locking)
+### Flow 3: Repositioning a Shape
 
 ```mermaid
 sequenceDiagram
@@ -344,34 +348,28 @@ sequenceDiagram
     
     User A->>Canvas A: Click and drag shape
     Canvas A->>Canvas A: onDragStart event
-    Canvas A->>Realtime DB: Acquire lock /locks/{shapeId}
-    Canvas A->>Realtime DB: Create temp position /temp-shapes/{shapeId}
+    Canvas A->>Realtime DB: Create drag position /drag-positions/{userId}
     
-    Realtime DB-->>Canvas B: Push lock update
-    Canvas B->>Canvas B: Mark shape as locked
-    Canvas B->>User B: Display red border on shape
+    Realtime DB-->>Canvas B: Push drag position update
+    Canvas B->>User B: Show shape moving in real-time
     
     User A->>Canvas A: Drag shape
     Canvas A->>Canvas A: Constrain to boundaries
-    Canvas A->>Realtime DB: Update /temp-shapes/{shapeId} position
+    Canvas A->>Realtime DB: Update /drag-positions/{userId} position
     
     Realtime DB-->>Canvas B: Push position update
-    Canvas B->>User B: Show shape moving in real-time
-    
-    User B->>Canvas B: Try to drag same shape
-    Canvas B->>Canvas B: Check lock status
-    Canvas B->>User B: Prevent interaction (shape locked)
+    Canvas B->>User B: Shape continues moving
     
     User A->>Canvas A: Release mouse (onDragEnd)
     Canvas A->>Canvas A: Constrain final position
     Canvas A->>Firestore: Update shape position /shapes/{shapeId}
-    Canvas A->>Realtime DB: Release lock /locks/{shapeId}
-    Canvas A->>Realtime DB: Delete temp position /temp-shapes/{shapeId}
+    Canvas A->>Realtime DB: Delete drag position /drag-positions/{userId}
     
     Firestore-->>Canvas B: Push final position
-    Realtime DB-->>Canvas B: Remove lock & temp position
-    Canvas B->>Canvas B: Remove red border
-    Canvas B->>User B: Shape unlocked, final position updated
+    Realtime DB-->>Canvas B: Remove drag position
+    Canvas B->>User B: Shape at final position
+
+Note right of User B: Locking system will be<br/>implemented in Task 3.8
 ```
 
 ### Flow 4: User Presence & Cursor Sync
@@ -776,6 +774,28 @@ graph TB
 - Easier testing and demonstration
 - Reduces complexity in state management
 - Easy to extend to multi-room later
+
+### Why drag-positions/{userId} instead of temp-shapes/{shapeId}?
+
+**Decision:** Store in-progress drag positions keyed by userId rather than shapeId
+
+**Rationale:**
+- Each user can only drag one shape at a time (UI limitation)
+- Simpler conflict resolution - one drag position per user
+- Automatic cleanup via onDisconnect() on user path
+- Clear ownership - position keyed by who is dragging, not what is being dragged
+- userId key provides implicit lock-like behavior (user owns their drag slot)
+
+**Trade-offs:**
+- ✅ Simpler implementation for MVP
+- ✅ Cleaner data structure
+- ✅ Automatic cleanup on disconnect
+- ❌ Can't track multiple simultaneous drags by same user (acceptable for MVP)
+- ❌ Must include shapeId in position data for lookup
+
+**Implementation Note:** This differs from original planning documents which showed 
+temp-shapes/{shapeId} for drag operations. The change was made during development 
+to simplify the drag synchronization logic and better align with single-user-single-drag UX.
 
 ---
 

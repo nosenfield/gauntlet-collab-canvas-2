@@ -1132,11 +1132,13 @@ const handleShapeDragMove = (shapeId: string, x: number, y: number) => {
     Math.min(CANVAS_HEIGHT - shape.height, y)
   );
   
-  // Update Realtime DB
-  const tempShapeRef = ref(rtdb, `canvases/${canvasId}/temp-shapes/${shapeId}`);
-  update(tempShapeRef, {
+  // Update Realtime DB - keyed by userId for simpler conflict resolution
+  const dragPosRef = ref(rtdb, `canvases/${canvasId}/drag-positions/${userId}`);
+  update(dragPosRef, {
+    shapeId: shapeId,
     x: constrainedX,
     y: constrainedY,
+    timestamp: Date.now(),
   });
 };
 
@@ -1160,10 +1162,10 @@ const handleShapeDragEnd = async (shapeId: string, x: number, y: number) => {
   });
   
   // Clean up Realtime DB
-  const tempShapeRef = ref(rtdb, `canvases/${canvasId}/temp-shapes/${shapeId}`);
-  remove(tempShapeRef);
+  const dragPosRef = ref(rtdb, `canvases/${canvasId}/drag-positions/${userId}`);
+  remove(dragPosRef);
   
-  // Release lock (next task)
+  // Lock system will be added in Task 3.8
 };
 ```
 

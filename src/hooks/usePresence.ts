@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { ref, set, onValue, onDisconnect, remove, serverTimestamp } from 'firebase/database';
 import { rtdb } from '../services/firebase';
 import type { PresenceData, PresenceState } from '../types/presence';
-import type { Point } from '../types/canvas';
 
 export const usePresence = (
   userId: string | null,

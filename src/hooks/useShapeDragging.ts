@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { ref, set, remove } from 'firebase/database';
 import { doc, updateDoc } from 'firebase/firestore';
 import { rtdb, db } from '../services/firebase';
-import type { Shape } from '../types/shape';
 import { constrainShapeToCanvas } from '../utils/shapeHelpers';
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../types/canvas';
 

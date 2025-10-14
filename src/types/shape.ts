@@ -22,6 +22,10 @@ export interface TempShape extends Shape {
   userId: string;
 }
 
+/**
+ * ShapeLock interface for Task 3.8 (Object Locking System)
+ * Currently unused - will be implemented in Task 3.8
+ */
 export interface ShapeLock {
   userId: string;
   timestamp: number;
