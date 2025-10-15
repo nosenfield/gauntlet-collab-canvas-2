@@ -30,6 +30,7 @@ interface CanvasProps {
 
 export interface CanvasRef {
   clearCanvas: () => Promise<void>;
+  adjustViewportToFit: () => void;
 }
 
 const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, user, otherUsers, isDrawMode, userColor, showGrid = true }, canvasRef) => {
@@ -94,25 +95,40 @@ const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, us
   ): { x: number; y: number; scale: number } => {
     const newViewport = { width: newWidth, height: newHeight };
     
+    // First, check if the current scale allows the canvas to fit properly
+    const canvasWidth = CANVAS_WIDTH * currentScale;
+    const canvasHeight = CANVAS_HEIGHT * currentScale;
+    
+    // If canvas is smaller than viewport, we might need to scale up
+    // If canvas is larger than viewport, we might need to scale down
+    const needsScaleAdjustment = canvasWidth < newWidth || canvasHeight < newHeight;
+    
     let newScale = currentScale;
     let newPos = currentPos;
     
-    const constrainedPos = constrainPosition(currentPos, currentScale, newViewport);
-    
-    if (Math.abs(constrainedPos.x - currentPos.x) > 10 || 
-        Math.abs(constrainedPos.y - currentPos.y) > 10) {
-      const canvasAspect = CANVAS_WIDTH / CANVAS_HEIGHT;
-      const viewportAspect = newWidth / newHeight;
+    if (needsScaleAdjustment) {
+      // Calculate scale to fit canvas to viewport
+      const scaleX = newWidth / CANVAS_WIDTH;
+      const scaleY = newHeight / CANVAS_HEIGHT;
       
-      if (canvasAspect > viewportAspect) {
-        newScale = newWidth / CANVAS_WIDTH;
-      } else {
-        newScale = newHeight / CANVAS_HEIGHT;
-      }
+      // Use the smaller scale to ensure canvas fits completely
+      newScale = Math.min(scaleX, scaleY);
       
-      newPos = constrainPosition(currentPos, newScale, newViewport);
+      // Calculate zoom limits to ensure reasonable bounds
+      const limits = calculateZoomLimits(newViewport);
+      newScale = Math.max(limits.min, Math.min(limits.max, newScale));
+      
+      // Center the canvas in the viewport
+      const scaledCanvasWidth = CANVAS_WIDTH * newScale;
+      const scaledCanvasHeight = CANVAS_HEIGHT * newScale;
+      
+      newPos = {
+        x: (newWidth - scaledCanvasWidth) / 2,
+        y: (newHeight - scaledCanvasHeight) / 2
+      };
     } else {
-      newPos = constrainedPos;
+      // Just constrain the current position
+      newPos = constrainPosition(currentPos, currentScale, newViewport);
     }
     
     return { x: newPos.x, y: newPos.y, scale: newScale };
@@ -284,9 +300,47 @@ const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, us
     }
   }, [clearAll]);
 
+  const adjustViewportToFit = useCallback(() => {
+    const currentWindowSize = {
+      width: window.innerWidth,
+      height: window.innerHeight - TOOLBAR_HEIGHT
+    };
+    
+    // Get current stage values directly from the stage ref to avoid stale state
+    const stage = stageRef.current;
+    if (stage) {
+      const currentPos = { x: stage.x(), y: stage.y() };
+      const currentScale = stage.scaleX();
+      
+      const adjusted = adjustViewportOnResize(
+        currentWindowSize.width,
+        currentWindowSize.height,
+        currentPos,
+        currentScale
+      );
+      
+      setWindowSize(currentWindowSize);
+      setStagePos({ x: adjusted.x, y: adjusted.y });
+      setStageScale(adjusted.scale);
+    } else {
+      // Fallback to state values if stage ref is not available
+      const adjusted = adjustViewportOnResize(
+        currentWindowSize.width,
+        currentWindowSize.height,
+        stagePos,
+        stageScale
+      );
+      
+      setWindowSize(currentWindowSize);
+      setStagePos({ x: adjusted.x, y: adjusted.y });
+      setStageScale(adjusted.scale);
+    }
+  }, [stagePos, stageScale]);
+
   useImperativeHandle(canvasRef, () => ({
-    clearCanvas
-  }), [clearCanvas]);
+    clearCanvas,
+    adjustViewportToFit
+  }), [clearCanvas, adjustViewportToFit]);
 
   // Notify parent of stage changes
   useEffect(() => {
@@ -325,17 +379,36 @@ const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, us
         height: window.innerHeight - TOOLBAR_HEIGHT
       };
       
-      // Adjust viewport to maintain canvas visibility
-      const adjusted = adjustViewportOnResize(
-        newSize.width,
-        newSize.height,
-        stagePos,
-        stageScale
-      );
-      
-      setWindowSize(newSize);
-      setStagePos({ x: adjusted.x, y: adjusted.y });
-      setStageScale(adjusted.scale);
+      // Get current stage values directly from the stage ref to avoid stale state
+      const stage = stageRef.current;
+      if (stage) {
+        const currentPos = { x: stage.x(), y: stage.y() };
+        const currentScale = stage.scaleX();
+        
+        // Adjust viewport to maintain canvas visibility
+        const adjusted = adjustViewportOnResize(
+          newSize.width,
+          newSize.height,
+          currentPos,
+          currentScale
+        );
+        
+        setWindowSize(newSize);
+        setStagePos({ x: adjusted.x, y: adjusted.y });
+        setStageScale(adjusted.scale);
+      } else {
+        // Fallback to state values if stage ref is not available
+        const adjusted = adjustViewportOnResize(
+          newSize.width,
+          newSize.height,
+          stagePos,
+          stageScale
+        );
+        
+        setWindowSize(newSize);
+        setStagePos({ x: adjusted.x, y: adjusted.y });
+        setStageScale(adjusted.scale);
+      }
     };
 
     window.addEventListener('resize', handleResize);
