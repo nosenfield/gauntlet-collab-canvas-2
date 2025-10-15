@@ -404,21 +404,6 @@ const Canvas: React.FC<CanvasProps> = ({ canvasId, onStageChange, user, otherUse
             listening={false}
           />
 
-          {/* Current rectangle being drawn */}
-          {currentRect && (
-            <Rect
-              x={currentRect.x}
-              y={currentRect.y}
-              width={currentRect.width}
-              height={currentRect.height}
-              fill={currentRect.fill}
-              opacity={0.7}
-              stroke="#000"
-              strokeWidth={1}
-              listening={false}
-            />
-          )}
-
           {/* Persistent shapes from Firestore */}
           {shapes.map((shape) => {
             // Get drag position if this shape is being dragged by another user
@@ -437,6 +422,7 @@ const Canvas: React.FC<CanvasProps> = ({ canvasId, onStageChange, user, otherUse
                 shape={displayShape}
                 isLocked={shapeIsLocked}
                 isLockedByCurrentUser={shapeIsLockedByCurrentUser}
+                isDrawMode={isDrawMode}
                 onDragStart={async (shapeId) => {
                   // Check if user already has a lock on another shape
                   const currentUserLock = getCurrentUserLock();
@@ -478,6 +464,21 @@ const Canvas: React.FC<CanvasProps> = ({ canvasId, onStageChange, user, otherUse
               listening={false}
             />
           ))}
+
+          {/* Current rectangle being drawn - rendered above all other shapes */}
+          {currentRect && (
+            <Rect
+              x={currentRect.x}
+              y={currentRect.y}
+              width={currentRect.width}
+              height={currentRect.height}
+              fill={currentRect.fill}
+              opacity={0.7}
+              stroke="#000"
+              strokeWidth={1}
+              listening={false}
+            />
+          )}
 
           {/* Multiplayer cursors */}
           {otherUsers.map((user) => (

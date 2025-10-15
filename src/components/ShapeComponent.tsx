@@ -8,6 +8,7 @@ interface ShapeComponentProps {
   shape: Shape;
   isLocked?: boolean;
   isLockedByCurrentUser?: boolean;
+  isDrawMode?: boolean;
   onDragStart?: (shapeId: string) => void;
   onDragMove?: (shapeId: string, x: number, y: number, width: number, height: number) => void;
   onDragEnd?: (shapeId: string, x: number, y: number, width: number, height: number) => void;
@@ -17,6 +18,7 @@ const ShapeComponent: React.FC<ShapeComponentProps> = ({
   shape, 
   isLocked = false,
   isLockedByCurrentUser = false,
+  isDrawMode = false,
   onDragStart,
   onDragMove,
   onDragEnd
@@ -25,7 +27,7 @@ const ShapeComponent: React.FC<ShapeComponentProps> = ({
     // Determine visual styling based on lock status
     const strokeColor = isLocked ? '#ff0000' : '#000';
     const strokeWidth = isLocked ? 3 : 1;
-    const isDraggable = !isLocked; // Only allow dragging if not locked by another user
+    const isDraggable = !isLocked && !isDrawMode; // Only allow dragging if not locked by another user and not in draw mode
     
     // Optional: Add visual indicator for shapes locked by current user
     const opacity = isLockedByCurrentUser ? 0.9 : 1.0;
