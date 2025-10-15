@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Point, Size } from '../types/canvas';
 import type { PresenceData } from '../types/presence';
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../types/canvas';
 
 interface ToolbarProps {
   stagePos?: Point;
@@ -114,7 +115,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
           <>
             Center: ({Math.round(viewportInfo.centerpoint.x)}, {Math.round(viewportInfo.centerpoint.y)}) | 
             Scale: {stageScale!.toFixed(2)}x | 
-            Visible: {Math.round(viewportInfo.visibleDimensions.width)}×{Math.round(viewportInfo.visibleDimensions.height)}
+            Visible: {Math.round(viewportInfo.visibleDimensions.width)}×{Math.round(viewportInfo.visibleDimensions.height)} | 
+            Canvas: {CANVAS_WIDTH}×{CANVAS_HEIGHT}
           </>
         )}
         
