@@ -12,6 +12,8 @@ interface ToolbarProps {
   isDrawMode?: boolean;
   onToggleDrawMode?: () => void;
   onClearCanvas?: () => void;
+  showGrid?: boolean;
+  onToggleGrid?: () => void;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({ 
@@ -22,7 +24,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
   userColor, 
   isDrawMode = false, 
   onToggleDrawMode,
-  onClearCanvas
+  onClearCanvas,
+  showGrid = true,
+  onToggleGrid
 }) => {
   // Calculate viewport centerpoint and visible canvas dimensions
   const getViewportInfo = () => {
@@ -89,6 +93,25 @@ const Toolbar: React.FC<ToolbarProps> = ({
           title={isDrawMode ? 'Exit draw mode (R)' : 'Enter draw mode (R)'}
         >
           Draw Rect {isDrawMode ? '(ON)' : '(OFF)'}
+        </button>
+        
+        {/* Toggle grid button */}
+        <button
+          onClick={onToggleGrid}
+          style={{
+            padding: '6px 12px',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            border: '1px solid #28a745',
+            borderRadius: '4px',
+            backgroundColor: showGrid ? '#28a745' : '#fff',
+            color: showGrid ? '#fff' : '#28a745',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+          title={showGrid ? 'Hide grid lines' : 'Show grid lines'}
+        >
+          Grid {showGrid ? '(ON)' : '(OFF)'}
         </button>
         
         {/* Clear canvas button */}

@@ -16,6 +16,7 @@ function App() {
     height: window.innerHeight - TOOLBAR_HEIGHT 
   });
   const [isDrawMode, setIsDrawMode] = useState(false);
+  const [showGrid, setShowGrid] = useState(true);
   const [canvasId, setCanvasId] = useState<string | null>(null);
   const [canvasLoading, setCanvasLoading] = useState(true);
   const [canvasError, setCanvasError] = useState<string | null>(null);
@@ -127,6 +128,8 @@ function App() {
         isDrawMode={isDrawMode}
         onToggleDrawMode={() => setIsDrawMode(!isDrawMode)}
         onClearCanvas={handleClearCanvas}
+        showGrid={showGrid}
+        onToggleGrid={() => setShowGrid(!showGrid)}
       />
       <div style={{ marginTop: '40px', width: '100%', height: 'calc(100vh - 40px)' }}>
         <Canvas 
@@ -140,6 +143,7 @@ function App() {
           otherUsers={otherUsers}
           isDrawMode={isDrawMode}
           userColor={userColor}
+          showGrid={showGrid}
         />
       </div>
     </div>

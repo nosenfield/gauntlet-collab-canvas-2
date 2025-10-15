@@ -25,13 +25,14 @@ interface CanvasProps {
   otherUsers: PresenceData[];
   isDrawMode: boolean;
   userColor: string;
+  showGrid?: boolean;
 }
 
 export interface CanvasRef {
   clearCanvas: () => Promise<void>;
 }
 
-const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, user, otherUsers, isDrawMode, userColor }, canvasRef) => {
+const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, user, otherUsers, isDrawMode, userColor, showGrid = true }, canvasRef) => {
   const [stagePos, setStagePos] = useState<Point>({ x: 0, y: 0 });
   const [stageScale, setStageScale] = useState(1);
   const [windowSize, setWindowSize] = useState<Size>({ 
@@ -427,41 +428,45 @@ const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, us
           />
           
           {/* Grid lines */}
-          {Array.from({ length: Math.floor(CANVAS_WIDTH / 100) + 1 }, (_, i) => {
-            const x = i * 100;
-            const isMajorLine = i % 5 === 0;
-            return (
-              <React.Fragment key={`vertical-${i}`}>
-                <Rect
-                  x={x}
-                  y={0}
-                  width={1}
-                  height={CANVAS_HEIGHT}
-                  fill="white"
-                  opacity={isMajorLine ? 1 : 0.5}
-                  listening={false}
-                />
-              </React.Fragment>
-            );
-          })}
-          
-          {Array.from({ length: Math.floor(CANVAS_HEIGHT / 100) + 1 }, (_, i) => {
-            const y = i * 100;
-            const isMajorLine = i % 5 === 0;
-            return (
-              <React.Fragment key={`horizontal-${i}`}>
-                <Rect
-                  x={0}
-                  y={y}
-                  width={CANVAS_WIDTH}
-                  height={1}
-                  fill="white"
-                  opacity={isMajorLine ? 1 : 0.5}
-                  listening={false}
-                />
-              </React.Fragment>
-            );
-          })}
+          {showGrid && (
+            <>
+              {Array.from({ length: Math.floor(CANVAS_WIDTH / 100) + 1 }, (_, i) => {
+                const x = i * 100;
+                const isMajorLine = i % 5 === 0;
+                return (
+                  <React.Fragment key={`vertical-${i}`}>
+                    <Rect
+                      x={x}
+                      y={0}
+                      width={1}
+                      height={CANVAS_HEIGHT}
+                      fill="white"
+                      opacity={isMajorLine ? 1 : 0.5}
+                      listening={false}
+                    />
+                  </React.Fragment>
+                );
+              })}
+              
+              {Array.from({ length: Math.floor(CANVAS_HEIGHT / 100) + 1 }, (_, i) => {
+                const y = i * 100;
+                const isMajorLine = i % 5 === 0;
+                return (
+                  <React.Fragment key={`horizontal-${i}`}>
+                    <Rect
+                      x={0}
+                      y={y}
+                      width={CANVAS_WIDTH}
+                      height={1}
+                      fill="white"
+                      opacity={isMajorLine ? 1 : 0.5}
+                      listening={false}
+                    />
+                  </React.Fragment>
+                );
+              })}
+            </>
+          )}
           
           {/* Canvas boundary */}
           <Rect
