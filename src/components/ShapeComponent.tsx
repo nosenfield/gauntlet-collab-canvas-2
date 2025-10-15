@@ -1,6 +1,7 @@
 import React from 'react';
 import { Rect } from 'react-konva';
 import type { Shape } from '../types/shape';
+import type { Point } from '../types/canvas';
 import { constrainShapeToCanvas } from '../utils/shapeHelpers';
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../types/canvas';
 
@@ -9,9 +10,12 @@ interface ShapeComponentProps {
   isLocked?: boolean;
   isLockedByCurrentUser?: boolean;
   isDrawMode?: boolean;
+  stagePos?: Point;
+  stageScale?: number;
   onDragStart?: (shapeId: string) => void;
   onDragMove?: (shapeId: string, x: number, y: number, width: number, height: number) => void;
   onDragEnd?: (shapeId: string, x: number, y: number, width: number, height: number) => void;
+  onCursorUpdate?: (x: number, y: number) => void;
 }
 
 const ShapeComponent: React.FC<ShapeComponentProps> = ({ 
@@ -19,9 +23,12 @@ const ShapeComponent: React.FC<ShapeComponentProps> = ({
   isLocked = false,
   isLockedByCurrentUser = false,
   isDrawMode = false,
+  stagePos,
+  stageScale,
   onDragStart,
   onDragMove,
-  onDragEnd
+  onDragEnd,
+  onCursorUpdate
 }) => {
   if (shape.type === 'rectangle') {
     // Determine visual styling based on lock status
@@ -59,6 +66,20 @@ const ShapeComponent: React.FC<ShapeComponentProps> = ({
           e.target.y(constrainedPos.y);
 
           onDragMove?.(shape.id, constrainedPos.x, constrainedPos.y, shape.width, shape.height);
+          
+          // Update cursor position during drag
+          if (onCursorUpdate && stagePos && stageScale) {
+            const stage = e.target.getStage();
+            if (stage) {
+              const pointerPos = stage.getPointerPosition();
+              if (pointerPos) {
+                // Convert to canvas coordinates
+                const x = (pointerPos.x - stagePos.x) / stageScale;
+                const y = (pointerPos.y - stagePos.y) / stageScale;
+                onCursorUpdate(x, y);
+              }
+            }
+          }
         }}
         onDragEnd={(e) => {
           const x = e.target.x();

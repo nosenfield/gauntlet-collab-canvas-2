@@ -494,6 +494,9 @@ const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, us
                 isLocked={shapeIsLocked}
                 isLockedByCurrentUser={shapeIsLockedByCurrentUser}
                 isDrawMode={isDrawMode}
+                stagePos={stagePos}
+                stageScale={stageScale}
+                onCursorUpdate={throttledCursorUpdate}
                 onDragStart={async (shapeId) => {
                   // Check if user already has a lock on another shape
                   const currentUserLock = getCurrentUserLock();
