@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { saveShape, subscribeToShapes } from '../services/shapeService';
+import { useState, useEffect, useCallback } from 'react';
+import { saveShape, subscribeToShapes, clearAllShapes } from '../services/shapeService';
 import type { Shape } from '../types/shape';
 
 export const useShapes = (canvasId: string) => {
@@ -7,15 +7,17 @@ export const useShapes = (canvasId: string) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const handleShapesUpdate = useCallback((newShapes: Shape[]) => {
+    setShapes(newShapes);
+    setIsLoading(false);
+  }, []);
+
   useEffect(() => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const unsubscribe = subscribeToShapes(canvasId, (newShapes) => {
-        setShapes(newShapes);
-        setIsLoading(false);
-      });
+      const unsubscribe = subscribeToShapes(canvasId, handleShapesUpdate);
 
       return () => unsubscribe();
     } catch (err) {
@@ -23,9 +25,9 @@ export const useShapes = (canvasId: string) => {
       setError(err instanceof Error ? err.message : 'Shapes subscription failed');
       setIsLoading(false);
     }
-  }, [canvasId]);
+  }, [canvasId, handleShapesUpdate]);
 
-  const addShape = async (shape: Shape): Promise<void> => {
+  const addShape = useCallback(async (shape: Shape): Promise<void> => {
     try {
       await saveShape(shape, canvasId);
       // Optimistic update - shape will be added via subscription
@@ -33,7 +35,17 @@ export const useShapes = (canvasId: string) => {
       console.error('Error adding shape:', err);
       throw err;
     }
-  };
+  }, [canvasId]);
 
-  return { shapes, isLoading, error, addShape };
+  const clearAll = useCallback(async (): Promise<void> => {
+    try {
+      await clearAllShapes(canvasId);
+      // Shapes will be cleared via subscription
+    } catch (err) {
+      console.error('Error clearing all shapes:', err);
+      throw err;
+    }
+  }, [canvasId]);
+
+  return { shapes, isLoading, error, addShape, clearAll };
 };

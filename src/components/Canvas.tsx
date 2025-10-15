@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef, useCallback } from 'react';
 import { Stage, Layer, Rect } from 'react-konva';
 import { ref, update } from 'firebase/database';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, TOOLBAR_HEIGHT } from '../types/canvas';
@@ -27,7 +27,11 @@ interface CanvasProps {
   userColor: string;
 }
 
-const Canvas: React.FC<CanvasProps> = ({ canvasId, onStageChange, user, otherUsers, isDrawMode, userColor }) => {
+export interface CanvasRef {
+  clearCanvas: () => Promise<void>;
+}
+
+const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, user, otherUsers, isDrawMode, userColor }, canvasRef) => {
   const [stagePos, setStagePos] = useState<Point>({ x: 0, y: 0 });
   const [stageScale, setStageScale] = useState(1);
   const [windowSize, setWindowSize] = useState<Size>({ 
@@ -48,7 +52,7 @@ const Canvas: React.FC<CanvasProps> = ({ canvasId, onStageChange, user, otherUse
   );
 
   // Persistent shapes from Firestore
-  const { shapes, addShape, isLoading: shapesLoading } = useShapes(canvasId);
+  const { shapes, addShape, clearAll, isLoading: shapesLoading } = useShapes(canvasId);
 
   // Shape dragging functionality
   const { startDrag, updateDrag, endDrag } = useShapeDragging(canvasId, user?.uid || null);
@@ -239,6 +243,20 @@ const Canvas: React.FC<CanvasProps> = ({ canvasId, onStageChange, user, otherUse
     
     setCurrentRect(null);
   };
+
+  const clearCanvas = useCallback(async () => {
+    try {
+      await clearAll();
+      console.log('Canvas cleared successfully');
+      // Note: onClearCanvas is called by the parent, not here to avoid circular calls
+    } catch (error) {
+      console.error('Failed to clear canvas:', error);
+    }
+  }, [clearAll]);
+
+  useImperativeHandle(canvasRef, () => ({
+    clearCanvas
+  }), [clearCanvas]);
 
   // Notify parent of stage changes
   useEffect(() => {
@@ -495,6 +513,6 @@ const Canvas: React.FC<CanvasProps> = ({ canvasId, onStageChange, user, otherUse
       </div>
     </LoadingOverlay>
   );
-};
+});
 
 export default Canvas;

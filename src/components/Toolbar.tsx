@@ -9,6 +9,7 @@ interface ToolbarProps {
   userColor?: string;
   isDrawMode?: boolean;
   onToggleDrawMode?: () => void;
+  onClearCanvas?: () => void;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({ 
@@ -17,7 +18,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
   otherUsers = [], 
   userColor, 
   isDrawMode = false, 
-  onToggleDrawMode 
+  onToggleDrawMode,
+  onClearCanvas
 }) => {
   return (
     <div 
@@ -58,6 +60,25 @@ const Toolbar: React.FC<ToolbarProps> = ({
           title={isDrawMode ? 'Exit draw mode (R)' : 'Enter draw mode (R)'}
         >
           Draw Rect {isDrawMode ? '(ON)' : '(OFF)'}
+        </button>
+        
+        {/* Clear canvas button */}
+        <button
+          onClick={onClearCanvas}
+          style={{
+            padding: '6px 12px',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            border: '1px solid #dc3545',
+            borderRadius: '4px',
+            backgroundColor: '#fff',
+            color: '#dc3545',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+          title="Clear all shapes from canvas"
+        >
+          Clear Canvas
         </button>
       </div>
       <div style={{ fontSize: '12px', color: '#666', display: 'flex', alignItems: 'center', gap: '16px' }}>

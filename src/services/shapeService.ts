@@ -1,4 +1,4 @@
-import { doc, setDoc, getDocs, collection, query, orderBy, onSnapshot, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collection, query, orderBy, onSnapshot, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import type { Shape } from '../types/shape';
 
@@ -73,6 +73,29 @@ export const deleteShape = async (shapeId: string, canvasId: string): Promise<vo
   } catch (error) {
     console.error('Error deleting shape:', error);
     throw new ShapeServiceError('Failed to delete shape', 'DELETE_ERROR', error);
+  }
+};
+
+export const clearAllShapes = async (canvasId: string): Promise<void> => {
+  try {
+    // Get all shapes first
+    const shapesRef = collection(db, `canvases/${canvasId}/shapes`);
+    const querySnapshot = await getDocs(shapesRef);
+    
+    if (querySnapshot.empty) {
+      return; // No shapes to delete
+    }
+    
+    // Use batch delete for better performance
+    const batch = writeBatch(db);
+    querySnapshot.forEach((docSnapshot) => {
+      batch.delete(docSnapshot.ref);
+    });
+    
+    await batch.commit();
+  } catch (error) {
+    console.error('Error clearing all shapes:', error);
+    throw new ShapeServiceError('Failed to clear all shapes', 'CLEAR_ERROR', error);
   }
 };
 

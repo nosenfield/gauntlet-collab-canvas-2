@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Toolbar from './components/Toolbar';
-import Canvas from './components/Canvas';
+import Canvas, { type CanvasRef } from './components/Canvas';
 import LoadingSpinner from './components/LoadingSpinner';
 import { useAuth } from './hooks/useAuth';
 import { usePresence } from './hooks/usePresence';
@@ -14,6 +14,8 @@ function App() {
   const [canvasId, setCanvasId] = useState<string | null>(null);
   const [canvasLoading, setCanvasLoading] = useState(true);
   const [canvasError, setCanvasError] = useState<string | null>(null);
+
+  const canvasRef = useRef<CanvasRef>(null);
 
   // Authentication and presence
   const { user, userColor, isLoading: authLoading, error: authError } = useAuth();
@@ -52,6 +54,14 @@ function App() {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
+
+  const handleClearCanvas = useCallback(async () => {
+    try {
+      await canvasRef.current?.clearCanvas();
+    } catch (error) {
+      console.error('Failed to clear canvas:', error);
+    }
   }, []);
 
   // Show loading state
@@ -97,9 +107,11 @@ function App() {
         userColor={userColor}
         isDrawMode={isDrawMode}
         onToggleDrawMode={() => setIsDrawMode(!isDrawMode)}
+        onClearCanvas={handleClearCanvas}
       />
       <div style={{ marginTop: '40px', width: '100%', height: 'calc(100vh - 40px)' }}>
         <Canvas 
+          ref={canvasRef}
           canvasId={canvasId || 'default'}
           onStageChange={(pos, scale) => {
             setStagePos(pos);
