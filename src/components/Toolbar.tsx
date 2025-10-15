@@ -87,49 +87,49 @@ const Toolbar: React.FC<ToolbarProps> = ({
             {canvasId === 'dev-canvas' ? 'DEV' : 'PROD'}
           </div>
         )}
-      </div>
-      <div style={{ fontSize: '12px', color: '#666', display: 'flex', alignItems: 'center', gap: '16px' }}>
-        {viewportInfo && (
-          <>
-            Center: ({Math.round(viewportInfo.centerpoint.x)}, {Math.round(viewportInfo.centerpoint.y)}) | 
-            Scale: {stageScale!.toFixed(2)}x | 
-            Visible: {Math.round(viewportInfo.visibleDimensions.width)}×{Math.round(viewportInfo.visibleDimensions.height)} | 
-            Canvas: {CANVAS_WIDTH}×{CANVAS_HEIGHT}
-          </>
-        )}
         
-        {/* User presence indicator */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span>{otherUsers.length + 1} users online</span>
-          <div style={{ display: 'flex', gap: '4px' }}>
-            {/* Current user */}
-            {userColor && (
-              <div 
-                style={{ 
-                  width: '12px', 
-                  height: '12px', 
-                  backgroundColor: userColor, 
-                  borderRadius: '50%',
-                  border: '1px solid #ccc'
-                }} 
-                title="You"
-              />
-            )}
-            {/* Other users */}
-            {otherUsers.map((user) => (
-              <div 
-                key={user.userId}
-                style={{ 
-                  width: '12px', 
-                  height: '12px', 
-                  backgroundColor: user.color, 
-                  borderRadius: '50%',
-                  border: '1px solid #ccc'
-                }} 
-                title={user.userId}
-              />
-            ))}
+        {/* Canvas info - left aligned after canvas ID */}
+        {viewportInfo && (
+          <div style={{ fontSize: '12px', color: '#666' }}>
+            Canvas: {CANVAS_WIDTH}×{CANVAS_HEIGHT} | 
+            Visible: {Math.round(viewportInfo.visibleDimensions.width)}×{Math.round(viewportInfo.visibleDimensions.height)} | 
+            Center: ({Math.round(viewportInfo.centerpoint.x)}, {Math.round(viewportInfo.centerpoint.y)}) | 
+            Scale: {stageScale!.toFixed(2)}x
           </div>
+        )}
+      </div>
+      
+      {/* User presence indicator - right aligned */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ fontSize: '12px', color: '#666' }}>{otherUsers.length + 1} users online</span>
+        <div style={{ display: 'flex', gap: '4px' }}>
+          {/* Current user */}
+          {userColor && (
+            <div 
+              style={{ 
+                width: '12px', 
+                height: '12px', 
+                backgroundColor: userColor, 
+                borderRadius: '50%',
+                border: '1px solid #ccc'
+              }} 
+              title="You"
+            />
+          )}
+          {/* Other users */}
+          {otherUsers.map((user) => (
+            <div 
+              key={user.userId}
+              style={{ 
+                width: '12px', 
+                height: '12px', 
+                backgroundColor: user.color, 
+                borderRadius: '50%',
+                border: '1px solid #ccc'
+              }} 
+              title={user.userId}
+            />
+          ))}
         </div>
       </div>
     </div>
