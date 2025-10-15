@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Toolbar from './components/Toolbar';
+import ToolbarModal from './components/ToolbarModal';
 import Canvas, { type CanvasRef } from './components/Canvas';
 import LoadingSpinner from './components/LoadingSpinner';
 import { useAuth } from './hooks/useAuth';
@@ -50,11 +51,13 @@ function App() {
     initCanvas();
   }, []);
 
-  // Keyboard shortcut for draw mode toggle
+  // Keyboard shortcuts for draw mode toggle and grid toggle
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'r' && !e.ctrlKey && !e.metaKey) {
         setIsDrawMode(prev => !prev);
+      } else if (e.key.toLowerCase() === 'g' && !e.ctrlKey && !e.metaKey) {
+        setShowGrid(prev => !prev);
       }
     };
 
@@ -125,13 +128,15 @@ function App() {
         windowSize={windowSize}
         otherUsers={otherUsers}
         userColor={userColor}
-        isDrawMode={isDrawMode}
-        onToggleDrawMode={() => setIsDrawMode(!isDrawMode)}
-        onClearCanvas={handleClearCanvas}
-        showGrid={showGrid}
-        onToggleGrid={() => setShowGrid(!showGrid)}
       />
-      <div style={{ marginTop: '40px', width: '100%', height: 'calc(100vh - 40px)' }}>
+      <div style={{ marginTop: '40px', width: '100%', height: 'calc(100vh - 40px)', position: 'relative' }}>
+        <ToolbarModal
+          isDrawMode={isDrawMode}
+          onToggleDrawMode={() => setIsDrawMode(!isDrawMode)}
+          onClearCanvas={handleClearCanvas}
+          showGrid={showGrid}
+          onToggleGrid={() => setShowGrid(!showGrid)}
+        />
         <Canvas 
           ref={canvasRef}
           canvasId={canvasId || 'default'}

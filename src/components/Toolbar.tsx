@@ -9,11 +9,6 @@ interface ToolbarProps {
   windowSize?: Size;
   otherUsers?: PresenceData[];
   userColor?: string;
-  isDrawMode?: boolean;
-  onToggleDrawMode?: () => void;
-  onClearCanvas?: () => void;
-  showGrid?: boolean;
-  onToggleGrid?: () => void;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({ 
@@ -21,12 +16,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   stageScale, 
   windowSize,
   otherUsers = [], 
-  userColor, 
-  isDrawMode = false, 
-  onToggleDrawMode,
-  onClearCanvas,
-  showGrid = true,
-  onToggleGrid
+  userColor
 }) => {
   // Calculate viewport centerpoint and visible canvas dimensions
   const getViewportInfo = () => {
@@ -75,63 +65,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
         <h1 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
           CollabCanvas MVP
         </h1>
-        
-        {/* Draw mode toggle */}
-        <button
-          onClick={onToggleDrawMode}
-          style={{
-            padding: '6px 12px',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            backgroundColor: isDrawMode ? '#007bff' : '#fff',
-            color: isDrawMode ? '#fff' : '#333',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-          title={isDrawMode ? 'Exit draw mode (R)' : 'Enter draw mode (R)'}
-        >
-          Draw Rect {isDrawMode ? '(ON)' : '(OFF)'}
-        </button>
-        
-        {/* Toggle grid button */}
-        <button
-          onClick={onToggleGrid}
-          style={{
-            padding: '6px 12px',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            border: '1px solid #28a745',
-            borderRadius: '4px',
-            backgroundColor: showGrid ? '#28a745' : '#fff',
-            color: showGrid ? '#fff' : '#28a745',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-          title={showGrid ? 'Hide grid lines' : 'Show grid lines'}
-        >
-          Grid {showGrid ? '(ON)' : '(OFF)'}
-        </button>
-        
-        {/* Clear canvas button */}
-        <button
-          onClick={onClearCanvas}
-          style={{
-            padding: '6px 12px',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            border: '1px solid #dc3545',
-            borderRadius: '4px',
-            backgroundColor: '#fff',
-            color: '#dc3545',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-          title="Clear all shapes from canvas"
-        >
-          Clear Canvas
-        </button>
       </div>
       <div style={{ fontSize: '12px', color: '#666', display: 'flex', alignItems: 'center', gap: '16px' }}>
         {viewportInfo && (
