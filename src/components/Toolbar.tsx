@@ -1,10 +1,11 @@
 import React from 'react';
-import type { Point } from '../types/canvas';
+import type { Point, Size } from '../types/canvas';
 import type { PresenceData } from '../types/presence';
 
 interface ToolbarProps {
   stagePos?: Point;
   stageScale?: number;
+  windowSize?: Size;
   otherUsers?: PresenceData[];
   userColor?: string;
   isDrawMode?: boolean;
@@ -15,12 +16,39 @@ interface ToolbarProps {
 const Toolbar: React.FC<ToolbarProps> = ({ 
   stagePos, 
   stageScale, 
+  windowSize,
   otherUsers = [], 
   userColor, 
   isDrawMode = false, 
   onToggleDrawMode,
   onClearCanvas
 }) => {
+  // Calculate viewport centerpoint and visible canvas dimensions
+  const getViewportInfo = () => {
+    if (!stagePos || !stageScale || !windowSize) {
+      return null;
+    }
+
+    // Calculate the center of the viewport in canvas coordinates
+    const viewportCenterX = windowSize.width / 2;
+    const viewportCenterY = windowSize.height / 2;
+    
+    // Convert viewport center to canvas coordinates
+    const canvasCenterX = (viewportCenterX - stagePos.x) / stageScale;
+    const canvasCenterY = (viewportCenterY - stagePos.y) / stageScale;
+    
+    // Calculate visible canvas dimensions
+    const visibleCanvasWidth = windowSize.width / stageScale;
+    const visibleCanvasHeight = windowSize.height / stageScale;
+    
+    return {
+      centerpoint: { x: canvasCenterX, y: canvasCenterY },
+      visibleDimensions: { width: visibleCanvasWidth, height: visibleCanvasHeight }
+    };
+  };
+
+  const viewportInfo = getViewportInfo();
+
   return (
     <div 
       style={{
@@ -82,10 +110,11 @@ const Toolbar: React.FC<ToolbarProps> = ({
         </button>
       </div>
       <div style={{ fontSize: '12px', color: '#666', display: 'flex', alignItems: 'center', gap: '16px' }}>
-        {stagePos && stageScale && (
+        {viewportInfo && (
           <>
-            Position: ({Math.round(stagePos.x)}, {Math.round(stagePos.y)}) | 
-            Scale: {stageScale.toFixed(2)}x
+            Center: ({Math.round(viewportInfo.centerpoint.x)}, {Math.round(viewportInfo.centerpoint.y)}) | 
+            Scale: {stageScale!.toFixed(2)}x | 
+            Visible: {Math.round(viewportInfo.visibleDimensions.width)}×{Math.round(viewportInfo.visibleDimensions.height)}
           </>
         )}
         

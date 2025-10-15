@@ -5,11 +5,16 @@ import LoadingSpinner from './components/LoadingSpinner';
 import { useAuth } from './hooks/useAuth';
 import { usePresence } from './hooks/usePresence';
 import { initializeCanvas } from './services/canvasService';
-import type { Point } from './types/canvas';
+import type { Point, Size } from './types/canvas';
+import { TOOLBAR_HEIGHT } from './types/canvas';
 
 function App() {
   const [stagePos, setStagePos] = useState<Point>({ x: 0, y: 0 });
   const [stageScale, setStageScale] = useState(1);
+  const [windowSize, setWindowSize] = useState<Size>({ 
+    width: window.innerWidth, 
+    height: window.innerHeight - TOOLBAR_HEIGHT 
+  });
   const [isDrawMode, setIsDrawMode] = useState(false);
   const [canvasId, setCanvasId] = useState<string | null>(null);
   const [canvasLoading, setCanvasLoading] = useState(true);
@@ -54,6 +59,19 @@ function App() {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight - TOOLBAR_HEIGHT
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleClearCanvas = useCallback(async () => {
@@ -103,6 +121,7 @@ function App() {
       <Toolbar 
         stagePos={stagePos} 
         stageScale={stageScale}
+        windowSize={windowSize}
         otherUsers={otherUsers}
         userColor={userColor}
         isDrawMode={isDrawMode}
