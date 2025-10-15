@@ -39,6 +39,7 @@ const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, us
     width: window.innerWidth, 
     height: window.innerHeight - TOOLBAR_HEIGHT 
   });
+  const [isWindowFocused, setIsWindowFocused] = useState(true);
 
   const stageRef = useRef<any>(null);
 
@@ -172,9 +173,12 @@ const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, us
     return { x, y, scale: clampedScale };
   };
 
-  // Cursor position tracking
+  // Cursor position tracking with window focus check
   const throttledCursorUpdate = useThrottle((x: number, y: number) => {
-    updateCursor(x, y);
+    // Only update cursor position if window is focused
+    if (isWindowFocused) {
+      updateCursor(x, y);
+    }
   }, 33); // ~30fps
 
   // Throttled temp shape update for real-time sync
@@ -408,6 +412,25 @@ const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, us
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [stagePos, stageScale]);
+
+  // Handle window focus/blur for cursor updates
+  useEffect(() => {
+    const handleFocus = () => {
+      setIsWindowFocused(true);
+    };
+
+    const handleBlur = () => {
+      setIsWindowFocused(false);
+    };
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, []);
 
   // Handle wheel events for panning and zooming
   const handleWheel = (e: any) => {
