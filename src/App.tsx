@@ -26,7 +26,7 @@ function App() {
 
   // Authentication and presence
   const { user, userColor, isLoading: authLoading, error: authError } = useAuth();
-  const { otherUsers } = usePresence(
+  const { otherUsers, updateCursor } = usePresence(
     user?.uid || null,
     userColor,
     canvasId || 'default'
@@ -150,6 +150,7 @@ function App() {
           isDrawMode={isDrawMode}
           userColor={userColor}
           showGrid={showGrid}
+          updateCursor={updateCursor}
         />
       </div>
     </div>

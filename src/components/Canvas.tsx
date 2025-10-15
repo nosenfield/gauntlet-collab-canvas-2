@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef, useCallback } from 'react';
 import { Stage, Layer, Rect } from 'react-konva';
-import { ref, update } from 'firebase/database';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, TOOLBAR_HEIGHT } from '../types/canvas';
 import type { Point, Size } from '../types/canvas';
 import type { User } from '../types/user';
@@ -13,7 +12,6 @@ import { useShapeDragging } from '../hooks/useShapeDragging';
 import { useDragPositions } from '../hooks/useDragPositions';
 import { useLocks } from '../hooks/useLocks';
 import { normalizeRect, createInitialRectangle } from '../utils/shapeHelpers';
-import { rtdb } from '../services/firebase';
 import MultiplayerCursor from './MultiplayerCursor';
 import ShapeComponent from './ShapeComponent';
 import { LoadingOverlay } from './LoadingSpinner';
@@ -26,6 +24,7 @@ interface CanvasProps {
   isDrawMode: boolean;
   userColor: string;
   showGrid?: boolean;
+  updateCursor: (x: number, y: number) => void;
 }
 
 export interface CanvasRef {
@@ -33,7 +32,7 @@ export interface CanvasRef {
   adjustViewportToFit: () => void;
 }
 
-const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, user, otherUsers, isDrawMode, userColor, showGrid = true }, canvasRef) => {
+const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, user, otherUsers, isDrawMode, userColor, showGrid = true, updateCursor }, canvasRef) => {
   const [stagePos, setStagePos] = useState<Point>({ x: 0, y: 0 });
   const [stageScale, setStageScale] = useState(1);
   const [windowSize, setWindowSize] = useState<Size>({ 
@@ -175,12 +174,7 @@ const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, us
 
   // Cursor position tracking
   const throttledCursorUpdate = useThrottle((x: number, y: number) => {
-    if (!user) return;
-    
-    const presenceRef = ref(rtdb, `canvases/${canvasId}/presence/${user.uid}/cursor`);
-    update(presenceRef, { x, y }).catch((error) => {
-      console.error('Failed to update cursor position:', error);
-    });
+    updateCursor(x, y);
   }, 33); // ~30fps
 
   // Throttled temp shape update for real-time sync
