@@ -127,6 +127,35 @@ const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, us
     return { min: minScale, max: maxScale };
   };
 
+  const calculateInitialViewport = (viewport: Size): { x: number; y: number; scale: number } => {
+    // Use the larger dimension to determine the starting zoom level
+    const largerDimension = Math.max(viewport.width, viewport.height);
+    
+    // Set zoom so that the larger dimension displays 1000px of canvas space
+    const targetCanvasSpace = 1000;
+    const scale = largerDimension / targetCanvasSpace;
+    
+    // Apply zoom limits to ensure reasonable bounds
+    const limits = calculateZoomLimits(viewport);
+    const clampedScale = Math.max(limits.min, Math.min(limits.max, scale));
+    
+    // Calculate center position
+    const scaledCanvasWidth = CANVAS_WIDTH * clampedScale;
+    const scaledCanvasHeight = CANVAS_HEIGHT * clampedScale;
+    
+    const x = (viewport.width - scaledCanvasWidth) / 2;
+    const y = (viewport.height - scaledCanvasHeight) / 2;
+    
+    console.log('Initial viewport calculation:', {
+      largerDimension,
+      targetCanvasSpace,
+      scale: clampedScale,
+      position: { x, y }
+    });
+    
+    return { x, y, scale: clampedScale };
+  };
+
   // Cursor position tracking
   const throttledCursorUpdate = useThrottle((x: number, y: number) => {
     if (!user) return;
@@ -262,6 +291,30 @@ const Canvas = forwardRef<CanvasRef, CanvasProps>(({ canvasId, onStageChange, us
   useEffect(() => {
     onStageChange?.(stagePos, stageScale);
   }, [stagePos, stageScale, onStageChange]);
+
+  // Initialize viewport on first load
+  useEffect(() => {
+    const initializeViewport = () => {
+      const currentWindowSize = {
+        width: window.innerWidth,
+        height: window.innerHeight - TOOLBAR_HEIGHT
+      };
+      
+      console.log('Initializing viewport with window size:', currentWindowSize);
+      console.log('Canvas dimensions:', { width: CANVAS_WIDTH, height: CANVAS_HEIGHT });
+      
+      const initialViewport = calculateInitialViewport(currentWindowSize);
+      console.log('Calculated initial viewport:', initialViewport);
+      
+      setStagePos({ x: initialViewport.x, y: initialViewport.y });
+      setStageScale(initialViewport.scale);
+    };
+    
+    // Small delay to ensure DOM is ready and window size is accurate
+    const timeoutId = setTimeout(initializeViewport, 0);
+    
+    return () => clearTimeout(timeoutId);
+  }, []); // Only run once on mount
 
   // Handle window resize
   useEffect(() => {
