@@ -1,7 +1,26 @@
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
 
-const CANVAS_ID = 'default-canvas';
+// Determine canvas ID based on environment
+const determineCanvasId = (): string => {
+  // Check if we're in development mode
+  const isDevelopment = import.meta.env.DEV || 
+                       import.meta.env.MODE === 'development' ||
+                       window.location.hostname === 'localhost' ||
+                       window.location.hostname === '127.0.0.1' ||
+                       window.location.hostname.includes('localhost');
+  
+  if (isDevelopment) {
+    return 'dev-canvas';
+  } else {
+    return 'prod-canvas';
+  }
+};
+
+const CANVAS_ID = determineCanvasId();
+
+// Log the canvas ID being used for debugging
+console.log(`Canvas ID determined: ${CANVAS_ID} (Environment: ${import.meta.env.DEV ? 'development' : 'production'})`);
 
 export interface CanvasMetadata {
   id: string;

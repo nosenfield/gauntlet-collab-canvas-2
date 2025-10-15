@@ -9,6 +9,7 @@ interface ToolbarProps {
   windowSize?: Size;
   otherUsers?: PresenceData[];
   userColor?: string;
+  canvasId?: string;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({ 
@@ -16,7 +17,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
   stageScale, 
   windowSize,
   otherUsers = [], 
-  userColor
+  userColor,
+  canvasId
 }) => {
   // Calculate viewport centerpoint and visible canvas dimensions
   const getViewportInfo = () => {
@@ -65,6 +67,26 @@ const Toolbar: React.FC<ToolbarProps> = ({
         <h1 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
           CollabCanvas MVP
         </h1>
+        
+        {/* Canvas ID display */}
+        {canvasId && (
+          <div 
+            style={{
+              padding: '4px 8px',
+              backgroundColor: canvasId === 'dev-canvas' ? '#e3f2fd' : '#f3e5f5',
+              color: canvasId === 'dev-canvas' ? '#1976d2' : '#7b1fa2',
+              borderRadius: '4px',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              border: `1px solid ${canvasId === 'dev-canvas' ? '#1976d2' : '#7b1fa2'}`,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}
+            title={`Canvas Environment: ${canvasId === 'dev-canvas' ? 'Development' : 'Production'}`}
+          >
+            {canvasId === 'dev-canvas' ? 'DEV' : 'PROD'}
+          </div>
+        )}
       </div>
       <div style={{ fontSize: '12px', color: '#666', display: 'flex', alignItems: 'center', gap: '16px' }}>
         {viewportInfo && (
